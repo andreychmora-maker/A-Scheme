@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-Scheme: GF(256) Homomorphic XOR Emulation</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; color: #212529; line-height: 1.6; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        h1, h2, h3 { color: #2c3e50; }
+        .card { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border-left: 5px solid #3498db; }
+        .flex-container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .flex-item { flex: 1; min-width: 320px; background: #e9ecef; padding: 20px; border-radius: 6px; }
+        .attr-group { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+        .attr-btn { padding: 8px 10px; border: 2px solid #3498db; background: transparent; color: #3498db; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.2s; font-family: 'Courier New', Courier, monospace; font-size: 1.1em;}
+        .attr-btn.active { background: #3498db; color: #fff; }
+        .math-box { font-family: 'Courier New', Courier, monospace; background: #1e2b3c; color: #ecf0f1; padding: 20px; border-radius: 6px; margin-top: 15px; overflow-x: auto; font-size: 1.1em; line-height: 1.5; }
+        .math-highlight { color: #f1c40f; font-weight: bold; }
+        .math-success { color: #2ecc71; font-weight: bold; }
+        .badge { display: inline-block; padding: 2px 6px; border-radius: 12px; font-size: 0.75em; font-weight: bold; margin-left: 4px; background: #bdc3c7; color: #2c3e50; font-family: sans-serif;}
+        button.action { background: #2c3e50; color: white; border: none; padding: 15px 25px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-top: 20px; font-weight: bold; transition: background 0.3s; width: 100%;}
+        button.action:hover { background: #1a252f; }
+        button.reset-btn { background: #7f8c8d; margin-top: 40px;}
+        button.reset-btn:hover { background: #636e72; }
+        .hidden { display: none; }
+        .crypto-step { border-left: 3px solid #9b59b6; padding-left: 15px; margin-bottom: 15px; background: #f4ecf7; padding: 10px 15px; border-radius: 0 6px 6px 0;}
+        .annihilation-box { background: #e8f8f5; border: 2px dashed #2ecc71; padding: 15px; margin-top: 15px; border-radius: 6px;}
+    </style>
+</head>
+<body>
+
+    <h1>A-Scheme: Homomorphic XOR Emulation</h1>
+    <p>This interactive simulator demonstrates the <strong>Base-3 Packing</strong> technique used in the A-Scheme to evaluate bitwise XOR operations over additively homomorphic scalar rings without carry-over. This example simulates the processing of a single attribute (an 8-bit byte from the GF(256) field) extracted from the access vectors <b>r</b><sub><i>i</i></sub> and <b>r</b><sub><i>j</i></sub>.</p>
+
+    <div class="card" style="border-left-color: #f39c12;">
+        <h2>Step 1: Byte Deconstruction & Base-3 Packing</h2>
+        <p>We isolate the &#x2113;-th attribute &#x1D52F;<sub>&#x2113;</sub> &isin; GF(256) for both the Sender and Receiver. Their binary representations (<i>x</i> and <i>y</i> &isin; {0, 1}<sup>8</sup>) are mapped to a scalar value using the superincreasing ternary weight sequence <i>W<sub>8</sub></i> = {1, 3, 9, 27, 81, 243, 729, 2187}.</p>
+        
+        <div class="flex-container">
+            <div class="flex-item">
+                <h3>Sender Attribute (&#x1D52F;<sub><i>i</i>, &#x2113;</sub>)</h3>
+                <div class="attr-group" id="sender-attrs">
+                    <button class="attr-btn active"><i>x</i><sub>0</sub> <span class="badge">w=1</span></button>
+                    <button class="attr-btn active"><i>x</i><sub>1</sub> <span class="badge">w=3</span></button>
+                    <button class="attr-btn"><i>x</i><sub>2</sub> <span class="badge">w=9</span></button>
+                    <button class="attr-btn"><i>x</i><sub>3</sub> <span class="badge">w=27</span></button>
+                    <button class="attr-btn active"><i>x</i><sub>4</sub> <span class="badge">w=81</span></button>
+                    <button class="attr-btn"><i>x</i><sub>5</sub> <span class="badge">w=243</span></button>
+                    <button class="attr-btn"><i>x</i><sub>6</sub> <span class="badge">w=729</span></button>
+                    <button class="attr-btn"><i>x</i><sub>7</sub> <span class="badge">w=2187</span></button>
+                </div>
+                <div class="math-box" id="sender-math"></div>
+            </div>
+            
+            <div class="flex-item">
+                <h3>Receiver Attribute (&#x1D52F;<sub><i>j</i>, &#x2113;</sub>)</h3>
+                <div class="attr-group" id="receiver-attrs">
+                    <button class="attr-btn active"><i>y</i><sub>0</sub> <span class="badge">w=1</span></button>
+                    <button class="attr-btn active"><i>y</i><sub>1</sub> <span class="badge">w=3</span></button>
+                    <button class="attr-btn active"><i>y</i><sub>2</sub> <span class="badge">w=9</span></button>
+                    <button class="attr-btn"><i>y</i><sub>3</sub> <span class="badge">w=27</span></button>
+                    <button class="attr-btn"><i>y</i><sub>4</sub> <span class="badge">w=81</span></button>
+                    <button class="attr-btn active"><i>y</i><sub>5</sub> <span class="badge">w=243</span></button>
+                    <button class="attr-btn"><i>y</i><sub>6</sub> <span class="badge">w=729</span></button>
+                    <button class="attr-btn active"><i>y</i><sub>7</sub> <span class="badge">w=2187</span></button>
+                </div>
+                <div class="math-box" id="receiver-math"></div>
+            </div>
+        </div>
+        
+        <button class="action" onclick="evaluateHomomorphism()">Evaluate Homomorphic Crypto Pipeline &darr;</button>
+    </div>
+
+    <div id="results" class="card hidden" style="border-left-color: #9b59b6;">
+        <h2>Step 2: Cryptographic Layer (EC-ElGamal)</h2>
+        <p>The Server evaluates the ciphertext without seeing the plaintext. Let the Receiver's private key be <i>s</i> and public key be <i>P<sub>pub</sub> = s &middot; G</i>. The underlying points are masked using random ephemeral scalars (&rho;<sub>1</sub>, &rho;<sub>2</sub>).</p>
+
+        <div class="crypto-step">
+            <strong>1. Sender Encryption (Ciphertext 1):</strong> 
+            <br>Maps scalar to point: <i>P<sub>i</sub></i> = <span id="crypto-sa-point" class="math-highlight">0</span> &middot; <i>G</i>
+            <br><i>C<sub>1</sub> = ( R<sub>1</sub>, M<sub>1</sub> ) = ( [&rho;<sub>1</sub>]G,  P<sub>i</sub> + [&rho;<sub>1</sub>]P<sub>pub</sub> )</i>
+        </div>
+
+        <div class="crypto-step">
+            <strong>2. Receiver Encryption (Ciphertext 2):</strong> 
+            <br>Maps scalar to point: <i>P<sub>j</sub></i> = <span id="crypto-sb-point" class="math-highlight">0</span> &middot; <i>G</i>
+            <br><i>C<sub>2</sub> = ( R<sub>2</sub>, M<sub>2</sub> ) = ( [&rho;<sub>2</sub>]G,  P<sub>j</sub> + [&rho;<sub>2</sub>]P<sub>pub</sub> )</i>
+        </div>
+
+        <div class="crypto-step" style="background: #eaf2f8; border-color: #3498db;">
+            <strong>3. Server-Side Blind Addition:</strong> 
+            <br>The server homomorphically adds the ciphertexts point-by-point:
+            <br><i>C<sub>sum</sub> = ( R<sub>1</sub>+R<sub>2</sub>, M<sub>1</sub>+M<sub>2</sub> )</i>
+            <br><i>C<sub>sum</sub> = ( [&rho;<sub>1</sub>+&rho;<sub>2</sub>]G, (P<sub>i</sub> + P<sub>j</sub>) + [&rho;<sub>1</sub>+&rho;<sub>2</sub>]P<sub>pub</sub> )</i>
+        </div>
+
+        <div class="annihilation-box">
+            <strong>4. Client-Side Decryption & Annihilation:</strong>
+            <br>The Receiver uses their private key <i>s</i> on the first part of the sum to recreate the exact random mask:
+            <br><i>Mask = s &middot; (R<sub>1</sub>+R<sub>2</sub>) = s &middot; [&rho;<sub>1</sub>+&rho;<sub>2</sub>]G = <span style="color:#e74c3c;">[&rho;<sub>1</sub>+&rho;<sub>2</sub>]P<sub>pub</sub></span></i>
+            <br><br>Subtracting the Mask from the second part <strong>annihilates the randomizers</strong>:
+            <br><i>M<sub>1</sub>+M<sub>2</sub> - Mask = (P<sub>i</sub> + P<sub>j</sub>) + <span style="color:#e74c3c;">[&rho;<sub>1</sub>+&rho;<sub>2</sub>]P<sub>pub</sub></span> - <span style="color:#e74c3c;">[&rho;<sub>1</sub>+&rho;<sub>2</sub>]P<sub>pub</sub></span></i>
+            <br><i>Payload Point = P<sub>i</sub> + P<sub>j</sub> = <span id="crypto-sum-final" class="math-highlight">0</span> &middot; G</i>
+            <br><br>The Receiver runs the Gaudry-Schost algorithm to resolve the ECDLP and extract the pure scalar sum:
+            <br><strong>Resolved Scalar (Z) = <span id="scalar-z" class="math-highlight">0</span></strong>
+        </div>
+
+        <h2 style="margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px;">Step 3: Base-3 Extraction & XOR Reconstruction</h2>
+        <p>The Receiver iteratively extracts the ternary coefficients &gamma;<sub><i>k</i></sub> from <i>Z</i> and reduces them modulo 2 to recover the exact XORed bits (<i>z<sub>k</sub></i>): <i>z<sub>k</sub> = (&lfloor;Z / 3<sup>k</sup>&rfloor; mod 3) mod 2</i>.</p>
+        
+        <div class="math-box" id="extraction-math"></div>
+
+        <h3 style="margin-top: 25px;" id="final-status"></h3>
+
+        <button class="action reset-btn" onclick="randomizeAndReset()">&#x21BB; Generate New Random Attributes & Restart</button>
+    </div>
+
+    <script>
+        const weights = [1, 3, 9, 27, 81, 243, 729, 2187];
+        
+        document.querySelectorAll('.attr-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('active');
+                updateLocalMath();
+            });
+        });
+
+        function getVectorAndScalar(containerId) {
+            const btns = document.querySelectorAll(`#${containerId} .attr-btn`);
+            let vector = [];
+            let scalar = 0;
+            let equation = [];
+            
+            btns.forEach((btn, i) => {
+                const isActive = btn.classList.contains('active') ? 1 : 0;
+                vector.push(isActive);
+                if (i < weights.length) {
+                    scalar += isActive * weights[i];
+                    if (isActive) {
+                        equation.push(`${weights[i]}`);
+                    }
+                }
+            });
+            return { vector, scalar, eq: equation.length > 0 ? equation.join(' + ') : '0' };
+        }
+
+        function updateLocalMath() {
+            const sender = getVectorAndScalar('sender-attrs');
+            const receiver = getVectorAndScalar('receiver-attrs');
+            
+            document.getElementById('sender-math').innerHTML = 
+                `Binary Vector : [${sender.vector.join(', ')}]<br>` +
+                `Base-3 Packing: ${sender.eq}<br>` +
+                `Packed Scalar : <span class="math-highlight">${sender.scalar}</span>`;
+                
+            document.getElementById('receiver-math').innerHTML = 
+                `Binary Vector : [${receiver.vector.join(', ')}]<br>` +
+                `Base-3 Packing: ${receiver.eq}<br>` +
+                `Packed Scalar : <span class="math-highlight">${receiver.scalar}</span>`;
+        }
+
+        function evaluateHomomorphism() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+            
+            const sender = getVectorAndScalar('sender-attrs');
+            const receiver = getVectorAndScalar('receiver-attrs');
+            const Z = sender.scalar + receiver.scalar;
+            
+            document.getElementById('crypto-sa-point').innerText = sender.scalar;
+            document.getElementById('crypto-sb-point').innerText = receiver.scalar;
+            document.getElementById('crypto-sum-final').innerText = Z;
+            document.getElementById('scalar-z').innerText = Z;
+            
+            let extractionHtml = "";
+            let xorVector = [];
+            let errorWeight = 0;
+
+            for (let k = 0; k < weights.length; k++) {
+                const divided = Math.floor(Z / weights[k]);
+                const gamma = divided % 3;
+                const z_k = gamma % 2;
+                
+                xorVector.push(z_k);
+                if (z_k === 1) errorWeight++;
+
+                extractionHtml += `Bit <i>z</i><sub>${k}</sub>: &lfloor;${Z} / ${weights[k]}&rfloor; = ${divided} &rarr; mod 3 = <span style="color:#3498db;">${gamma}</span> &rarr; mod 2 = <span class="math-highlight">${z_k}</span><br>`;
+            }
+            
+            extractionHtml += `<br>Reconstructed XOR Difference (&#x1D522;<sub>&#x2113;</sub>): [${xorVector.join(', ')}]<br>`;
+            extractionHtml += `Hamming Distance (Number of mismatched bits): ${errorWeight}`;
+            
+            document.getElementById('extraction-math').innerHTML = extractionHtml;
+
+            const statusEl = document.getElementById('final-status');
+            statusEl.innerHTML = `<span class="math-success">SUCCESS:</span> The bitwise XOR difference &#x1D522;<sub>&#x2113;</sub> &isin; GF(256) has been exactingly reconstructed from the blind sum! The additive homomorphism successfully emulated a carry-free XOR operation.`;
+        }
+
+        function randomizeAndReset() {
+            document.getElementById('results').classList.add('hidden');
+            
+            document.querySelectorAll('.attr-btn').forEach(btn => {
+                if (Math.random() > 0.5) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            updateLocalMath();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        updateLocalMath();
+    </script>
+</body>
+</html>
