@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23537349.svg)](https://doi.org/10.5281/zenodo.23537349)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23574958.svg)](https://doi.org/10.5281/zenodo.23574958)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # A-Scheme: Information-Theoretic Covert Transport
@@ -42,3 +42,21 @@ This interactive widget simulates the exact processing of a single attribute (an
 
 ### Security & Privacy Note
 This is a purely client-side simulation. No data is transmitted, and no external libraries or APIs are called.
+
+### 📚 Academic Citation
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23574958.svg)](https://doi.org/10.5281/zenodo.23574958)
+
+If you utilize these scripts or the BLS12-479+ curve parameters in your research,
+please cite the associated archive:
+
+```bash
+@misc{chmora2026bls12steganography,
+  author       = {Andrey Chmora},
+  title        = {Optimizing Elligator Squared for BLS Curves: A Jacobi Quartic Approach},
+  month        = {Oct},
+  year         = {2026},
+  publisher    = {Zenodo},
+  doi          = 10.5281/zenodo.23536594
+  url          = [https://zenodo.org/badge/DOI/10.5281/zenodo.23574958.svg](https://doi.org/10.5281/zenodo.23574958)
+```
