@@ -3,6 +3,8 @@
 # Ignore temporary files, build results, simulation files
 
 ## Modelica-specific files
+
+*.m
 *~
 *.bak
 *.bak-mo
