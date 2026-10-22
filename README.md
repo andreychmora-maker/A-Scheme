@@ -1,2 +1,30 @@
-# A-Sheme
-A scalable additively homomorphic encryption framework for attribute-driven access control in distributed environments
+# A-Scheme: Homomorphic XOR Emulation (Interactive Demonstration)
+
+## Overview
+This supplementary material provides an interactive, standalone simulation of the **Base-3 Packing** technique and the homomorphic evaluation process introduced in the paper: *"Scalable Attribute-Based Encryption in Hamming Metric via Packed Additive Homomorphism"*.
+
+The simulator allows users to visually and mathematically explore how bitwise XOR operations are emulated within additively homomorphic scalar rings without carry-over, and how the underlying EC-ElGamal randomizers are algebraically annihilated during decryption.
+
+## Technical Note: The Byte-to-Scalar Pipeline
+This interactive widget simulates the exact processing of a single attribute (an 8-bit byte) from the access vectors over GF(256). The homomorphic XOR emulation transitions smoothly between three mathematical domains:
+
+1. **Deconstruction (Finite Field):** An individual ℓ-th attribute from the access vector is strictly mapped to an 8-bit binary representation (x, y ∈ {0, 1}⁸).
+2. **Base-3 Packing (Scalar Ring):** These 8 bits are weighted and packed into a single carry-free scalar value (η = 8, maximum scalar sum = 6560).
+3. **Cryptographic Layer (Elliptic Curve):** The server homomorphically adds these packed scalars across ciphertexts using standard EC point addition. The simulation details the EC-ElGamal layer, illustrating how random ephemeral scalars (ρ₁, ρ₂) mask the points and how these masks are subsequently annihilated by the receiver's private key.
+4. **Unpacking (Arithmetic):** The receiver resolves the short-interval ECDLP via the Gaudry-Schost algorithm to recover the sum, then iteratively extracts the exact XORed bits via modulo-3 and modulo-2 arithmetic.
+5. **Reassembly (Finite Field):** The reconstructed bits are assembled back into the exact bitwise XOR difference (denoted as 𝔢ₗ ∈ GF(256)), successfully demonstrating a carry-free XOR operation over the original inputs.
+
+## System Requirements
+* **Dependencies:** None. The demonstration relies entirely on standard vanilla HTML, CSS, and JavaScript.
+* **Network:** No internet connection is required to run the simulation after downloading.
+* **Compatibility:** Works on any modern web browser (Google Chrome, Mozilla Firefox, Apple Safari, Microsoft Edge, etc.).
+
+## How to Run the Demonstration
+1. Download the `a-scheme-base3-demo.html` file to your local machine.
+2. Double-click the downloaded `.html` file. It will automatically open in your default web browser.
+3. Use the interactive buttons to toggle the individual bits (xₖ, yₖ) of the Sender's and Receiver's attributes.
+4. Click the **"Evaluate Homomorphic Crypto Pipeline ↓"** button to step through the Server-Side blind addition, the Client-Side mask annihilation, and the Base-3 extraction math.
+5. Click the **"↻ Generate New Random Attributes & Restart"** button at the bottom to quickly test the mathematical consistency against different random bit combinations.
+
+## Security & Privacy Note
+This is a purely client-side simulation. No data is transmitted, and no external libraries or APIs are called.
