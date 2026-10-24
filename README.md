@@ -47,13 +47,13 @@ This is a purely client-side simulation. No data is transmitted, and no external
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23574958.svg)](https://doi.org/10.5281/zenodo.23574958)
 
-If you utilize these scripts or the BLS12-479+ curve parameters in your research,
+If you utilize these scripts in your research,
 please cite the associated archive:
 
 ```bash
-@misc{chmora2026bls12steganography,
+@misc{chmora2026ascheme,
   author       = {Andrey Chmora},
-  title        = {Optimizing Elligator Squared for BLS Curves: A Jacobi Quartic Approach},
+  title        = {The A-Scheme for Information-Theoretic Covert Transport},
   month        = {Oct},
   year         = {2026},
   publisher    = {Zenodo},
