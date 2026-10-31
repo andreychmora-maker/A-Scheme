@@ -3,6 +3,9 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23578925.svg)](https://doi.org/10.5281/zenodo.23578925)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+[![Magma Compatible](https://img.shields.io/badge/Language-Magma%20V2.29.10-blue.svg)](http://magma.maths.usyd.edu.au/)
+[![Code Rate](https://img.shields.io/badge/Code%20Rate-R%3D0.75-green.svg)]()
+
 This repository contains the proof-of-concept (PoC) implementation, benchmarking suite, and interactive simulators for the A-Scheme framework, which provides homomorphic XOR emulation and attribute-driven access control.
 
 ## Repository Contents
