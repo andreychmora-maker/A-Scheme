@@ -22,7 +22,7 @@ This repository contains the proof-of-concept (PoC) implementation, benchmarking
 To prevent advanced inter-frame and cross-session linear addition attacks ($\mathbf{c}'_1 + \mathbf{c}'_2$) by an honest-but-curious server, the A-Scheme integrates stream-seeded ephemeral half-radius blind noise ($\mathbf{\xi}_i$ with weight 22):
 
 - **Intra-Epoch and Inter-Session Protection:** While static static Access Codes allow mask annihilation under pairwise combinations ($T = 2$), injecting per-session ephemeral blind noise ensures that any attempted linear addition combines independent support weights, yielding a total error weight far exceeding the Reed-Solomon decoding threshold ($\aleph=31$), with collision probabilities bounded below $2^{-32.0}$.
-- **Sender Unlinkability:** By binding the ephemeral noise generation to the session key and cryptographic salt ($\mathbf{\xi} = \mathsf{Expand}_{\text{PRG}}(\hat{\kappa}_i || \sigma_i)$), static salt and signature fields are prevented from vanishing during server-side summations, completely preserving sender unlinkability across transactions.
+- **Sender Unlinkability:** By binding the ephemeral noise generation to the session key and cryptographic salt (ξ_i = Expand_PRG(κ̂ || σ_i)), static salt and signature fields are prevented from vanishing during server-side summations, completely preserving sender unlinkability across transactions.
 
 ## An Interactive Web Simulator
 
