@@ -13,8 +13,16 @@ This repository contains the proof-of-concept (PoC) implementation, benchmarking
 - **`a-scheme-base3-demo.html`**: An interactive web simulator demonstrating the Base-3 Packing technique and homomorphic XOR emulation over the GF(256) field. The simulator visualizes the EC-ElGamal cryptographic layer, blind server-side addition, and client-side scalar extraction with subsequent bitwise reconstruction.
 - **`SaaC_prototyping.m`**: The master Magma script implementing the full protocol lifecycle: from Bootstrap and key derivation to secure session establishment and ratcheting (Reinitialization). The script utilizes RFC 5869 HKDF for all chain operations, Elligator Squared for elliptic curve point obfuscation, and a 2-Bit Parity Filter for steganographic metadata concealment.
 - **`benchmark_.m`**: A script for comprehensive end-to-end benchmarking of the baseline A-Scheme. It integrates a standard Reed-Solomon [255, 128, 128]₂₅₆ algebraic engine over GF(256) (code rate *R* ≈ 0.50), Curve25519 cryptographic primitives, and homomorphic XOR emulation featuring O(1) table-based ECDLP resolution.
-- **`rs256_192_65.m`**: An upgraded end-to-end Magma benchmark script implementing the high-rate extended non-systematic Reed-Solomon [256, 192, 65]₂₅₆ algebraic engine over GF(256) (code rate *R* = 0.75). It incorporates a random invertible scrambling matrix *S* ∈ GL(192, GF(256)) for MDS puncturing defense, 256-byte Curve25519 homomorphic XOR evaluation, punctured syndrome decoding (clearing ℵ = 31 symbol errors), and linear payload recovery via submatrix inversion.
+- **`rs256_192_65.m`**: An upgraded end-to-end Magma benchmark script implementing the high-rate extended non-systematic Reed-Solomon [256, 192, 65]₂₅₆ algebraic engine over GF(256) (code rate *R* = 0.75). It incorporates a random invertible scrambling matrix *S* ∈ GL(192, GF(256)) for MDS puncturing defense, 256-byte Curve25519 homomorphic XOR evaluation, punctured syndrome decoding (clearing aleph = 31 symbol errors), and linear payload recovery via submatrix inversion.
+- **`monolithic-ascheme-scenarios.m`**: An end-to-end protocol and cryptanalytic attack verification suite over Curve25519. It validates the monolithic KEM payload encapsulation (session keys, integrity hashes, broadcast rosters, and compact Schnorr signatures) along with self-unmasking ephemeral half-radius blind noise (wt(ξ) = 22) generated via deterministic Expand_PRG expansion. It simulates 7 distinct operational and adversarial scenarios, demonstrating complete resilience against cross-session linear addition attacks, tag annihilation failures, and full session compromise.
 - **`optimized_Gaudry-Schost.m`**: A memory-optimized Magma implementation of the Gaudry-Schost algorithm for resolving the short-interval ECDLP on Montgomery Curve25519 without relying on precomputed lookup tables. The algorithm leverages equivalence classes (coordinates with opposite signs) and an asymmetric compression ratio of 0.1 to accelerate the collision search.
+
+## Security Highlights: Ephemeral Blind Noise & Cross-Session Defense
+
+To prevent advanced inter-frame and cross-session linear addition attacks (`c'_1 + c'_2`) by an honest-but-curious server, the A-Scheme integrates stream-seeded ephemeral half-radius blind noise (`ξ_i` with weight 22):
+
+- **Intra-Epoch and Inter-Session Protection:** While static static Access Codes allow mask annihilation under pairwise combinations (`T = 2`), injecting per-session ephemeral blind noise ensures that any attempted linear addition combines independent support weights, yielding a total error weight far exceeding the Reed-Solomon decoding threshold ($\aleph=31$ `aleph = 31`), with collision probabilities bounded below `2^-32.0`.
+- **Sender Unlinkability:** By binding the ephemeral noise generation to the session key and cryptographic salt (`ξ_i = Expand_PRG(κ̂_i || σ_i)`), static salt and signature fields are prevented from vanishing during server-side summations, completely preserving sender unlinkability across transactions.
 
 ## An Interactive Web Simulator
 
@@ -26,9 +34,9 @@ The simulator allows users to visually and mathematically explore how bitwise XO
 ### Technical Note: The Byte-to-Scalar Pipeline
 This interactive widget simulates the exact processing of a single attribute (an 8-bit byte) from the access vectors over GF(256). The homomorphic XOR emulation transitions smoothly between three mathematical domains:
 
-1. **Deconstruction (Finite Field):** An individual ℓ-th attribute from the access vector is strictly mapped to an 8-bit binary representation (*x*, *y* ∈ {0, 1}⁸).
+1. **Deconstruction (Finite Field):** An individual attribute from the access vector is strictly mapped to an 8-bit binary representation (*x*, *y* ∈ {0, 1}⁸).
 2. **Base-3 Packing (Scalar Ring):** These 8 bits are weighted and packed into a single carry-free scalar value (*η* = 8, maximum scalar sum = 6560).
-3. **Cryptographic Layer (Elliptic Curve):** The server homomorphically adds these packed scalars across ciphertexts using standard EC point addition. The simulation details the EC-ElGamal layer, illustrating how random ephemeral scalars (*ρ*₁, *ρ*₂) mask the points and how these masks are subsequently annihilated by the receiver's private key.
+3. **Cryptographic Layer (Elliptic Curve):** The server homomorphically adds these packed scalars across ciphertexts using standard EC point addition. The simulation details the EC-ElGamal layer, illustrating how random ephemeral scalars mask the points and how these masks are subsequently annihilated by the receiver's private key.
 4. **Unpacking (Arithmetic):** The receiver resolves the short-interval ECDLP via the Gaudry-Schost algorithm to recover the sum, then iteratively extracts the exact XORed bits via modulo-3 and modulo-2 arithmetic.
 5. **Reassembly (Finite Field):** The reconstructed bits are assembled back into the exact bitwise XOR difference (denoted as *e* ∈ GF(256)), successfully demonstrating a carry-free XOR operation over the original inputs.
 
@@ -40,7 +48,7 @@ This interactive widget simulates the exact processing of a single attribute (an
 ### How to Run the Demonstration
 1. Download the `a-scheme-base3-demo.html` file to your local machine.
 2. Double-click the downloaded `.html` file. It will automatically open in your default web browser.
-3. Use the interactive buttons to toggle the individual bits (*x*ₖ, *y*ₖ) of the Sender's and Receiver's attributes.
+3. Use the interactive buttons to toggle the individual bits of the Sender's and Receiver's attributes.
 4. Click the **"Evaluate Homomorphic Crypto Pipeline ↓"** button to step through the Server-Side blind addition, the Client-Side mask annihilation, and the Base-3 extraction math.
 5. Click the **"↻ Generate New Random Attributes & Restart"** button at the bottom to quickly test the mathematical consistency against different random bit combinations.
 
@@ -61,5 +69,6 @@ If you utilize these scripts in your research, please cite the associated archiv
   year         = {2026},
   publisher    = {Zenodo},
   doi          = {10.5281/zenodo.23574958},
-  url          = {[https://doi.org/10.5281/zenodo.23574958](https://doi.org/10.5281/zenodo.23574958)}
+  url          = {https://doi.org/10.5281/zenodo.23574958}
 }
+```
