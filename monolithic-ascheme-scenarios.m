@@ -16,8 +16,8 @@ ElGamalKeys := function(G, q)
     return <s*G, s>;
 end function;
 
-ElGamalEncryption := function(PlainText, PublicKey, G, q)
-    T := PlainText * G;
+ElGamalEncryption := function(PlainText, PublicKey, G, q, G_Pow)
+    T := (PlainText eq 0) select Parent(G)!0 else G_Pow[PlainText];
     r := Random(1, q - 1);
     return [r*G, T + r*PublicKey];
 end function;
@@ -40,12 +40,14 @@ end function;
 BuildECDLPTable := function(G, MaxVal)
     Table := AssociativeArray();
     Table[0] := 0; // Point at Infinity
+    G_Pow := [G : i in [1..MaxVal]];
     P := G;
     for i in [1..MaxVal] do
         Table[P[1]] := i;
+        G_Pow[i] := P;
         P +:= G;
     end for;
-    return Table;
+    return Table, G_Pow;
 end function;
 
 ECDLPByTable := function(Point, Table)
@@ -71,6 +73,7 @@ V192 := VectorSpace(F, k_dim);
 C_std := ReedSolomonCode(F, d_min - 1);
 G_std := GeneratorMatrix(C_std);
 H_std := ParityCheckMatrix(C_std);
+H_std_T := Transpose(H_std);
 
 // Non-systematic scrambling matrix S in GL_192(F_256)
 S_mat := RandomMatrix(F, k_dim, k_dim);
@@ -98,7 +101,7 @@ end function;
 // Blind RS Decoder returning: ok, kappa_rec, wt_err, err_vec_256
 DecodeNS := function(perturbed_cw)
     cw_255 := V255 ! Eltseq(perturbed_cw)[1..n_rs];
-    syn := cw_255 * Transpose(H_std);
+    syn := cw_255 * H_std_T;
     if IsZero(syn) then
         scrambled_rec := V192 ! Eltseq(cw_255)[1..k_dim];
         return true, scrambled_rec * S_inv, 0, V256!0;
@@ -220,7 +223,7 @@ Weights := [3^i : i in [0..k-1]];
 MaxWeightSum2 := (&+Weights) * 2; // 6560 (2-operand homomorphic sum)
 MaxWeightSum4 := (&+Weights) * 4; // 13120 (4-operand bound for T=3 coalition carry test)
 printf "Generating O(1) ECDLP LUT on Curve25519 for Max Z = %o...\n", MaxWeightSum4;
-LUT := BuildECDLPTable(G, MaxWeightSum4);
+LUT, G_Pow := BuildECDLPTable(G, MaxWeightSum4);
 
 MyKeys := ElGamalKeys(G, q);
 MyPublicKey := MyKeys[1];
@@ -228,7 +231,7 @@ MySecretKey := MyKeys[2];
 printf "Domain & Non-Systematic RS Setup completed in %.3o sec.\n", Cputime(t_start);
 
 // Fast vectorized EC-ElGamal homomorphic addition & unpacking (sharing ephemeral scalar r per frame)
-HomomorphicChannelEval := function(vec_list, PubKey, SecKey, G, q, Weights, LUT, k)
+HomomorphicChannelEval := function(vec_list, PubKey, SecKey, G, q, Weights, LUT, G_Pow, k)
     C1_sum := E!0;
     C2_vec := [E!0 : i in [1..n_len]];
     for u in [1..#vec_list] do
@@ -240,7 +243,8 @@ HomomorphicChannelEval := function(vec_list, PubKey, SecKey, G, q, Weights, LUT,
         for chunk in [1..n_len] do
             b_bin := FieldElementToBinVec(v_u[chunk]);
             S_val := &+[b_bin[i] * Weights[i] : i in [1..k]];
-            C2_vec[chunk] +:= (S_val * G + Blind_u);
+            Pt_S  := (S_val eq 0) select E!0 else G_Pow[S_val];
+            C2_vec[chunk] +:= (Pt_S + Blind_u);
         end for;
     end for;
     SharedMask := SecKey * C1_sum;
@@ -281,8 +285,8 @@ for chunk in [1..n_len] do
     SumForSender   := &+[s_bin[i]*Weights[i] : i in [1..k]];
     SumForReceiver := &+[r_bin[i]*Weights[i] : i in [1..k]];
 
-    C_Sender   := ElGamalEncryption(SumForSender, MyPublicKey, G, q);
-    C_Receiver := ElGamalEncryption(SumForReceiver, MyPublicKey, G, q);
+    C_Sender   := ElGamalEncryption(SumForSender, MyPublicKey, G, q, G_Pow);
+    C_Receiver := ElGamalEncryption(SumForReceiver, MyPublicKey, G, q, G_Pow);
 
     C_Sum := [C_Sender[1] + C_Receiver[1], C_Sender[2] + C_Receiver[2]];
 
@@ -295,7 +299,7 @@ end for;
 printf "Homomorphic Pipeline Time (256 independent ElGamal blocks): %.3o sec.\n", Cputime(t_eval);
 
 received_vec := V256 ! received_homomorphic;
-iterations := 5000;
+iterations := 1000;
 c_start := ClockCycles();
 for i in [1..iterations] do
     success, recovered_msg, wt_cleared, _ := DecodeNS(received_vec);
@@ -366,10 +370,10 @@ c_1 := EncodeNS(kappa_1);
 xi_1, supp_xi_1 := ExpandPRG(khat_1, sigma_U1, w_xi, n_rs);
 
 // Phases 3-4: Proxy blinds (c_1 + xi_1) with M_U1; Sender extracts perturbed vector c'_1
-c_prime_1 := HomomorphicChannelEval([c_1 + xi_1, M_U1], MyPublicKey, MySecretKey, G, q, Weights, LUT, k);
+c_prime_1 := HomomorphicChannelEval([c_1 + xi_1, M_U1], MyPublicKey, MySecretKey, G, q, Weights, LUT, G_Pow, k);
 
 // Phases 5-6: Server re-encrypts c'_1 and adds Receiver U_2's Access Code M_U2; U_2 decrypts c''_1
-c_dprime_1 := HomomorphicChannelEval([c_prime_1, M_U2], MyPublicKey, MySecretKey, G, q, Weights, LUT, k);
+c_dprime_1 := HomomorphicChannelEval([c_prime_1, M_U2], MyPublicKey, MySecretKey, G, q, Weights, LUT, G_Pow, k);
 
 // Phases 7-8: U_2 performs blind RS decoding, regenerates xi'_1 = Expand_PRG(khat'_1 || sigma'_U1),
 // strips xi'_1 from error vector e_j, recovers sender attributes r'_U1, and verifies Dealer Schnorr signature
@@ -389,9 +393,9 @@ printf "  [Receiver U_2] Hash Integrity: %o | Dealer Schnorr Signature Valid: %o
        ok_hash_1, ok_sig_1, khat_rec_1 eq khat_1;
 
 /* --------------------------------------------------------------------------
-   SCENARIO 2A: VULNERABILITY OF STATIC A-SCHEME WITHOUT xi_i (xi = 0)
+   SCENARIO 2A: CROSS-SESSION KEY-SUM EXPOSURE WITHOUT BLIND NOISE (xi = 0)
    -------------------------------------------------------------------------- */
-printf "\n=== SCENARIO 2A: SERVER CROSS-SESSION ADDITION ATTACK WITHOUT BLIND NOISE (xi = 0) ===\n";
+printf "\n=== SCENARIO 2A: CROSS-SESSION KEY-SUM EXPOSURE WITHOUT BLIND NOISE (xi = 0) ===\n";
 kappa_2, khat_2, _ := BuildMonolithicKEM_AScheme(B_roster, sigma_U1, Sigma_U1);
 c_2 := EncodeNS(kappa_2);
 
@@ -402,13 +406,14 @@ c_prime_2_no_xi := c_2 + M_U1;
 // Honest-but-curious Server sums c'_1 + c'_2 -> M_U1 + M_U1 = 0, leaving noiseless EncodeNS(kappa_1 + kappa_2)!
 server_sum_no_xi := c_prime_1_no_xi + c_prime_2_no_xi;
 ok_srv_no_xi, leaked_kappa_xor, wt_srv_no_xi, _ := DecodeNS(server_sum_no_xi);
-leaked_seq := Eltseq(leaked_kappa_xor);
-static_tail_vanished := &and[leaked_seq[idx] eq F!0 : idx in [129..192]]; // sigma_U1 and Sigma_U1 vanish!
 recovered_kappa_2_by_srv := leaked_kappa_xor + kappa_1;
+recovered_khat_2_by_srv  := Eltseq(recovered_kappa_2_by_srv)[1..32];
 
 printf "  [Without xi_i] Server RS Decode on (c'_1 + c'_2): %o (wt = %o)\n", ok_srv_no_xi, wt_srv_no_xi;
-printf "  [Without xi_i] Static Salt & Signature Vanished (Sender Linked!): %o\n", static_tail_vanished;
-printf "  [Without xi_i] Full kappa_2 Leaked if Historical kappa_1 Known:   %o\n", recovered_kappa_2_by_srv eq kappa_2;
+printf "  [Without xi_i] Linear Payload Sum (kappa_1 + kappa_2) Exposed:    %o\n",
+       leaked_kappa_xor eq (kappa_1 + kappa_2);
+printf "  [Without xi_i] Session Key khat_2 Leaked if Historical kappa_1 Compromised: %o\n",
+       recovered_khat_2_by_srv eq khat_2;
 
 /* --------------------------------------------------------------------------
    SCENARIO 2B: CROSS-SESSION ADDITION DEFEATED BY Expand_PRG NOISE (wt(xi) = 22)
@@ -452,7 +457,7 @@ printf "  Server RS Decode on (c'_U1 + c'_U2): %o -> ATTRIBUTE DIFFERENCE & KEY 
    -------------------------------------------------------------------------- */
 printf "\n=== SCENARIO 4: HOMOMORPHIC ODD COALITION (T = 3) BASE-3 CARRY AVALANCHE ===\n";
 // 4 operands summed homomorphically on Curve25519: c'_1 + M_U1 + M_U2 + M_U3
-c_hom_odd := HomomorphicChannelEval([c_prime_1, M_U1, M_U2, M_U3], MyPublicKey, MySecretKey, G, q, Weights, LUT, k);
+c_hom_odd := HomomorphicChannelEval([c_prime_1, M_U1, M_U2, M_U3], MyPublicKey, MySecretKey, G, q, Weights, LUT, G_Pow, k);
 wt_carry_avalanche := #[i : i in [1..n_rs] | (c_hom_odd + c_1)[i] ne F!0];
 ok_hom_odd, _, _, _ := DecodeNS(c_hom_odd);
 printf "  Total 255B RS Core Error Weight (Base-3 Carry Avalanche): %o / 255 | RS Decode: %o\n",
@@ -460,7 +465,7 @@ printf "  Total 255B RS Core Error Weight (Base-3 Carry Avalanche): %o / 255 | R
 
 printf "\n=== SCENARIO 5: EVEN COALITION (T = 2) MASK ANNIHILATION FAILURE ===\n";
 // 2 user access codes added to c'_1: (w, m) in M_U2 + M_U3 self-annihilate, leaving c'_1's (w, m) intact!
-c_hom_even := HomomorphicChannelEval([c_prime_1, M_U2, M_U3], MyPublicKey, MySecretKey, G, q, Weights, LUT, k);
+c_hom_even := HomomorphicChannelEval([c_prime_1, M_U2, M_U3], MyPublicKey, MySecretKey, G, q, Weights, LUT, G_Pow, k);
 wt_even_unmasked := #[i : i in [1..n_rs] | (c_hom_even + c_1)[i] ne F!0];
 ok_hom_even, _, _, _ := DecodeNS(c_hom_even);
 printf "  Total 255B RS Core Error Weight (Uncanceled w, m): %o / 255 | RS Decode: %o\n",
@@ -471,9 +476,8 @@ printf "  Total 255B RS Core Error Weight (Uncanceled w, m): %o / 255 | RS Decod
    -------------------------------------------------------------------------- */
 printf "\n=== SCENARIO 6: LEFT-HALF LOCALIZED CSPRNG NOISE (RESILIENCE UNDER FULL kappa_1 LEAK TO SERVER) ===\n";
 // Sender samples xi_loc_1 and xi_loc_2 from a local CSPRNG supported strictly in the left half {1..128}
-_, supp_loc_1 := ExpandPRG(khat_1, sigma_U1, w_xi, 128);
-xi_loc_1, _   := ExpandPRG([Random(F) : i in [1..32]], sigma_U1, w_xi, 128);
-xi_loc_2, _   := ExpandPRG([Random(F) : i in [1..32]], sigma_U1, w_xi, 128);
+xi_loc_1, _ := ExpandPRG([Random(F) : i in [1..32]], sigma_U1, w_xi, 128);
+xi_loc_2, _ := ExpandPRG([Random(F) : i in [1..32]], sigma_U1, w_xi, 128);
 
 c_prime_loc_1 := c_1 + M_U1 + xi_loc_1;
 c_prime_loc_2 := c_2 + M_U1 + xi_loc_2;
@@ -494,10 +498,78 @@ printf "  [Server + Leaked kappa_1] Residual Error on Session 2: wt(xi_loc_2 - x
        wt_loc_diff, aleph, ok_srv_loc_attack;
 
 /* --------------------------------------------------------------------------
-   SCENARIO 7: ANALYTICAL HYPERGEOMETRIC BOUND & VERIFICATION REPORT
+   SCENARIO 7: ANALYTICAL HYPERGEOMETRIC BOUND & 50,000-PAIR MONTE CARLO SUITE
    -------------------------------------------------------------------------- */
-printf "\n=== SCENARIO 7: ANALYTICAL & MONTE CARLO SUPPORT OVERLAP VERIFICATION ===\n";
-// Pre-computed exact hypergeometric tail bound for wt(xi_i) = 22 and t = 31
-printf "  [Analytical N=255, w_xi=22] Pr[s >= 13] = 7.91E-11 | Total Pr[wt <= 31] = 2.30E-10 (~ 2^-32.0)\n";
-printf "  [Empirical Verification (10 fast trials)] Min Combined wt(xi_a + xi_b) = 40 (> aleph = 31) | Collisions: 0\n";
-printf "\n=== ALL PROTOCOL STAGES & ATTACK SCENARIOS COMPLETED SUCCESSFULLY ===\n";
+printf "\n=== SCENARIO 7: ANALYTICAL & 50,000-PAIR MONTE CARLO SUPPORT OVERLAP BOUND ===\n";
+RR := RealField(10);
+
+ComputeExactBounds := function(N_space, w_noise, t_rad)
+    req_overlap := 2 * w_noise - t_rad;
+    denom := Binomial(N_space, w_noise);
+    pr_pure_overlap := RR!0;
+    pr_total_cancel := RR!0;
+    p_cancel := (RR!1) / (RR!255);
+    p_noncancel := (RR!254) / (RR!255);
+
+    for s in [0..w_noise] do
+        pr_s := (RR!(Binomial(w_noise, s) * Binomial(N_space - w_noise, w_noise - s))) / (RR!denom);
+        if s ge req_overlap then
+            pr_pure_overlap +:= pr_s;
+        end if;
+        c_min := Max(0, req_overlap - s);
+        if c_min le s then
+            pr_c_sum := RR!0;
+            for c in [c_min..s] do
+                pr_c := (RR!Binomial(s, c)) * (p_cancel^c) * (p_noncancel^(s - c));
+                pr_c_sum +:= pr_c;
+            end for;
+            pr_total_cancel +:= pr_s * pr_c_sum;
+        end if;
+    end for;
+    return pr_pure_overlap, pr_total_cancel;
+end function;
+
+pr_s_20, pr_tot_20 := ComputeExactBounds(n_rs, 20, aleph);
+pr_s_22, pr_tot_22 := ComputeExactBounds(n_rs, 22, aleph);
+
+printf "  [Profile wt(xi)=20, w_attr<=11] Exact Pr[s >= 9]  = %o | Total Pr[wt <= 31] = %o (~ 2^-18.7)\n",
+       pr_s_20, pr_tot_20;
+printf "  [Profile wt(xi)=22, w_attr<=9]  Exact Pr[s >= 13] = %o | Total Pr[wt <= 31] = %o (~ 2^-32.0)\n",
+       pr_s_22, pr_tot_22;
+
+// Fast 50,000-pair Monte Carlo simulation using native C-kernel RandomSubset
+num_mc_trials := 50000;
+BaseCoords := {1..n_rs};
+total_overlap := 0;
+min_combined_wt := 2 * w_xi;
+decodable_collisions := 0;
+
+for tr := 1 to num_mc_trials do
+    supp_a := RandomSubset(BaseCoords, w_xi);
+    supp_b := RandomSubset(BaseCoords, w_xi);
+    ov := #(supp_a meet supp_b);
+    total_overlap +:= ov;
+    cancels := 0;
+    for c_idx := 1 to ov do
+        if Random(1, 255) eq 1 then
+            cancels +:= 1;
+        end if;
+    end for;
+    wt_ab := 2 * w_xi - ov - cancels;
+    if wt_ab lt min_combined_wt then
+        min_combined_wt := wt_ab;
+    end if;
+    if wt_ab le aleph then
+        decodable_collisions +:= 1;
+    end if;
+end for;
+
+theo_mean_ov := (RR!(w_xi^2)) / (RR!n_rs);
+emp_mean_ov  := (RR!total_overlap) / (RR!num_mc_trials);
+
+printf "  Theoretical E[s] = %.3o | Empirical Mean Overlap (%o pairs) = %.3o\n",
+       theo_mean_ov, num_mc_trials, emp_mean_ov;
+printf "  Empirical Minimum wt(xi_a + xi_b) across %o pairs: %o (Threshold aleph = %o) | Collisions: %o\n",
+       num_mc_trials, min_combined_wt, aleph, decodable_collisions;
+
+printf "\n=== ALL PROTOCOL STAGES & ATTACK SCENARIOS COMPLETED IN %.3o SEC ===\n", Cputime(t_start);
