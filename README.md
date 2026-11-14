@@ -54,29 +54,30 @@ This interactive widget simulates the exact processing of a single attribute (an
 
 ### Security & Privacy Note
 This is a purely client-side simulation. No data is transmitted, and no external libraries or APIs are called.
+
 ## Empirical Verification & Cryptanalytic Benchmark (`monolithic-ascheme-scenarios.m`)
 
-The complete protocol pipeline and cryptanalytic defense suite execute directly in the **Magma Online Calculator** (`http://magma.maths.usyd.edu.au/calc/`) in **16.870 seconds** (well within the 60-second sandbox limit).
+The complete protocol pipeline and cryptanalytic defense suite—including an **850,000-pair Monte Carlo simulation** at $w_\xi = 23, w_{\mathrm{attr}} = 8$—execute directly in the **Magma Online Calculator** (`http://magma.maths.usyd.edu.au/calc/`) in **59.710 seconds** (within the 60-second sandbox limit). Across all $850{,}000$ trials, the empirical mean support overlap converges to **2.075** (matching the theoretical expectation $\mathbb{E}[s] = 23^2/255 \approx 2.075$ to three decimal places), and the minimum observed combined noise weight is **36**, remaining strictly above both the unique Berlekamp–Massey decoding radius ($\aleph = 31$) and the full-code Guruswami–Sudan Johnson bound ($J(255, 192) = 34$).
 
 ### Console Output (`Magma V2.29`)
 
 ```text
 === MONOLITHIC A-SCHEME SETUP ON CURVE25519 (Online Calculator) ===
 Generating O(1) ECDLP LUT on Curve25519 for Max Z = 13120...
-Domain & Non-Systematic RS Setup completed in 0.190 sec.
+Domain & Non-Systematic RS Setup completed in 0.200 sec.
 
 === PART 4: FAST HOMOMORPHIC CHANNEL & DECODER BENCHMARK ([255, 192, 64]_256) ===
 [!] Executing Per-Byte Homomorphic EC-ElGamal XOR (256 blocks)...
 Homomorphic Pipeline Time (256 independent ElGamal blocks): 2.090 sec.
-RS Status: SUCCESS=true (Cleared 31 / 31 errors) | Payload Match: true | Avg Decode: 2768273 CPU Cycles
+RS Status: SUCCESS=true (Cleared 31 / 31 errors) | Payload Match: true | Avg Decode: 2802047 CPU Cycles
 
 ==========================================================================
 PART 5: MONOLITHIC A-SCHEME PROTOCOL & CRYPTANALYTIC ATTACK SCENARIOS
 ==========================================================================
-Provisioned Cohort Users U_1, U_2, U_3 | wt(r_1) = 62 (> 31) | d_H(r_1, r_2) = 8 (<= w_attr = 9)
+Provisioned Cohort Users U_1, U_2, U_3 | wt(r_1) = 64 (> 31) | d_H(r_1, r_2) = 8 (<= w_attr = 8)
 
 === SCENARIO 1: END-TO-END A-SCHEME (Expand_PRG NOISE + ATTRIBUTE RECOVERY & SCHNORR VERIFY) ===
-  [Receiver U_2] Blind RS Decode: true | Combined wt(e_attr + xi_1) = 30 (<= aleph = 31)
+  [Receiver U_2] Blind RS Decode: true | Combined wt(e_attr + xi_1) = 31 (<= aleph = 31)
   [Receiver U_2] Regenerated xi'_1 == xi_1: true | Sender Attributes r'_1 == r_1: true
   [Receiver U_2] Hash Integrity: true | Dealer Schnorr Signature Valid: true | Session Key Match: true
 
@@ -85,46 +86,47 @@ Provisioned Cohort Users U_1, U_2, U_3 | wt(r_1) = 62 (> 31) | d_H(r_1, r_2) = 8
   [Without xi_i] Linear Payload Sum (kappa_1 + kappa_2) Exposed:    true
   [Without xi_i] Session Key khat_2 Leaked if Historical kappa_1 Compromised: true
 
-=== SCENARIO 2B: SAME-SENDER CROSS-SESSION ADDITION DEFEATED BY xi_i (wt(xi) = 22) ===
-  [With xi_i] Support Overlap |supp(xi_1) cap supp(xi_2)| = 3
-  [With xi_i] Combined Blind Noise Weight wt(xi_1 + xi_2) = 41 (> aleph = 31)
+=== SCENARIO 2B: SAME-SENDER CROSS-SESSION ADDITION DEFEATED BY xi_i (wt(xi) = 23) ===
+  [With xi_i] Support Overlap |supp(xi_1) cap supp(xi_2)| = 1
+  [With xi_i] Combined Blind Noise Weight wt(xi_1 + xi_2) = 45 (> aleph = 31)
   [With xi_i] Server RS Decode on (c'_1 + c'_2): false -> CROSS-SESSION ADDITION BLOCKED!
 
 === SCENARIO 3: DISTINCT-SENDER ADDITION ATTACK (c'_U1 + c'_U2 IN SAME COHORT) ===
-  Attribute Distance wt(r_1 + r_2) = 8 (<= 9), but Total Error wt(r_1 + r_2 + xi_1 + xi_3) = 51 (> 31)
+  Attribute Distance wt(r_1 + r_2) = 8 (<= 8), but Total Error wt(r_1 + r_2 + xi_1 + xi_3) = 52 (> 31)
   Server RS Decode on (c'_U1 + c'_U2): false -> ATTRIBUTE DIFFERENCE & KEY EXTRACTION BLOCKED!
 
 === SCENARIO 4: HOMOMORPHIC ODD COALITION (T = 3) BASE-3 CARRY AVALANCHE ===
-  Total 255B RS Core Error Weight (Base-3 Carry Avalanche): 253 / 255 | RS Decode: false
+  Total 255B RS Core Error Weight (Base-3 Carry Avalanche): 252 / 255 | RS Decode: false
 
 === SCENARIO 5: EVEN COALITION (T = 2) MASK ANNIHILATION FAILURE ===
-  Total 255B RS Core Error Weight (Uncanceled w, m): 253 / 255 | RS Decode: false
+  Total 255B RS Core Error Weight (Uncanceled w, m): 251 / 255 | RS Decode: false
 
 === SCENARIO 6: LEFT-HALF LOCALIZED CSPRNG NOISE (RESILIENCE UNDER FULL kappa_1 LEAK TO SERVER) ===
-  [Legitimate U_2] Blind Decode: true (wt = 30) | Direct Right-Half Attribute Recovery (r'_1 == r_1): true
-  [Server + Leaked kappa_1] Residual Error on Session 2: wt(xi_loc_2 - xi_loc_1) = 41 (> 31) | Decode: false -> BLOCKED!
+  [Legitimate U_2] Blind Decode: true (wt = 31) | Direct Right-Half Attribute Recovery (r'_1 == r_1): true
+  [Server + Leaked kappa_1] Residual Error on Session 2: wt(xi_loc_2 - xi_loc_1) = 43 (> 31) | Decode: false -> BLOCKED!
 
-=== SCENARIO 7: ANALYTICAL & 50,000-PAIR MONTE CARLO SUPPORT OVERLAP BOUND ===
+=== SCENARIO 7: ANALYTICAL & 850000-PAIR MONTE CARLO SUPPORT OVERLAP BOUND ===
   [Profile wt(xi)=20, w_attr<=11] Exact Pr[s >= 9]  = 1.635924364E-6 | Total Pr[wt <= 31] = 2.382234622E-6 (~ 2^-18.7)
   [Profile wt(xi)=22, w_attr<=9]  Exact Pr[s >= 13] = 7.912538399E-11 | Total Pr[wt <= 31] = 2.298592658E-10 (~ 2^-32.0)
-  Theoretical E[s] = 1.898 | Empirical Mean Overlap (50000 pairs) = 1.894
-  Empirical Minimum wt(xi_a + xi_b) across 50000 pairs: 36 (Threshold aleph = 31) | Collisions: 0
+  [Profile wt(xi)=23, w_attr<=8]  Exact Pr[s >= 15] = 2.950130609E-13 | Total Pr[wt <= 31] = 1.504660580E-12 (~ 2^-39.3)
+  Theoretical E[s] = 2.075 | Empirical Mean Overlap (850000 pairs) = 2.075
+  Empirical Minimum wt(xi_a + xi_b) across 850000 pairs: 36 (Threshold aleph = 31, Johnson J = 34) | Collisions: 0
 
-=== ALL PROTOCOL STAGES & ATTACK SCENARIOS COMPLETED IN 16.870 SEC ===
+=== ALL PROTOCOL STAGES & ATTACK SCENARIOS COMPLETED IN 59.710 SEC ===
 ```
 
 ### Verification Summary Table
 
-| Scenario | Operational / Adversarial Test Case | Observed Weight `wt(e)` | Threshold `ℵ` | RS Decode | Security Verdict |
+| Scenario | Operational / Adversarial Test Case | Observed Weight `wt(e)` | Bound (`ℵ = 31`, `J = 34`) | RS Decode | Security Verdict |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| **Sc. 1** | End-to-End Monolithic KEM + `Expand_PRG` Stripping & Schnorr Verify | `30` (`8 + 22`) | `<= 31` | `true` | ✅ Validated (`r'_1 == r_1`) |
-| **Sc. 2A** | Cross-Session Addition without Blind Noise (`xi_i = 0` Baseline) | `0` | `<= 31` | `true` | ⚠️ `kappa_1 + kappa_2` Exposed |
-| **Sc. 2B** | Same-Sender Cross-Session Addition (`c'_1 + c'_2`) with `wt(xi_i) = 22` | `41` (`overlap = 3`) | `> 31` | `false` | 🛡️ Addition Blocked |
-| **Sc. 3** | Distinct-Sender Cohort Addition (`c'_U1 + c'_U2`, `d_H(r_1, r_2) = 8`) | `51` | `> 31` | `false` | 🛡️ Attribute Diff Blocked |
-| **Sc. 4** | Homomorphic Odd Coalition (`T = 3`, 4 Operands in `G`) | `253 / 255` | `> 31` | `false` | 🛡️ Base-3 Carry Avalanche |
-| **Sc. 5** | Homomorphic Even Coalition (`T = 2`, `M_U2 + M_U3` Self-Annihilation) | `253 / 255` | `> 31` | `false` | 🛡️ Masks `(w, m)` Intact |
-| **Sc. 6** | Left-Half Localized CSPRNG Noise under Full `kappa_1` Leak to Server | `30` (U2) / `41` (Srv) | `<= 31` / `> 31` | `true` / `false` | 🛡️ Session 2 Protected |
-| **Sc. 7** | Analytical Hypergeometric Bound & `50,000`-Pair Monte Carlo (`w_xi = 22`) | `min = 36` (`E[s] = 1.894`) | `> 31` | `0 collisions` | ✅ `Pr ≈ 2.30e-10 (~2^-32.0)` |
+| **Sc. 1** | End-to-End Monolithic KEM + `Expand_PRG` Stripping & Schnorr Verify | `31` (`8 + 23`) | `<= 31` | `true` | ✅ Validated ($\mathbf{r}'_1=\mathbf{r}_1$) |
+| **Sc. 2A** | Cross-Session Addition without Blind Noise ($\mathbf{\xi}_i = 0$ Baseline) | `0` | `<= 31` | `true` | ⚠️ $\kappa_1 + \kappa_2$ Exposed |
+| **Sc. 2B** | Same-Sender Cross-Session Addition ($\mathbf{c}'_1 + \mathbf{c}'_2$) with $\mathrm{wt}(\mathbf{\xi}_i)=23$ | `45` (`overlap = 1`) | `> 34 > 31` | `false` | 🛡️ Addition Blocked |
+| **Sc. 3** | Distinct-Sender Cohort Addition (`c'_U1 + c'_U2`, `d_H(r_1, r_2) = 8`) | `52` | `> 34 > 31` | `false` | 🛡️ Attribute Diff Blocked |
+| **Sc. 4** | Homomorphic Odd Coalition (`T = 3`, 4 Operands in `G`) | `252 / 255` | `> 34 > 31` | `false` | 🛡️ Base-3 Carry Avalanche |
+| **Sc. 5** | Homomorphic Even Coalition (`T = 2`, `M_U2 + M_U3` Self-Annihilation) | `251 / 255` | `> 34 > 31` | `false` | 🛡️ Masks `(w, m)` Intact |
+| **Sc. 6** | Left-Half Localized CSPRNG Noise under Full $\kappa_1$ Leak to Server | `31` (U2) / `43` (Srv) | `<= 31` / `> 34` | `true` / `false` | 🛡️ Session 2 Protected |
+| **Sc. 7** | Analytical Hypergeometric Bound & `850,000`-Pair Monte Carlo (`w_xi = 23`) | `min = 36` (`E[s] = 2.075`) | `> 34 > 31` | `0 collisions` | ✅ `Pr ≈ 1.50e-12 (~2^-39.3)` |
 
 ### 📚 Academic Citation
 
