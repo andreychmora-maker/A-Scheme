@@ -538,7 +538,7 @@ printf "  [Profile wt(xi)=22, w_attr<=9]  Exact Pr[s >= 13] = %o | Total Pr[wt <
        pr_s_22, pr_tot_22;
 
 // Fast 50,000-pair Monte Carlo simulation using native C-kernel RandomSubset
-num_mc_trials := 50000;
+num_mc_trials := 800000;
 BaseCoords := {1..n_rs};
 total_overlap := 0;
 min_combined_wt := 2 * w_xi;
