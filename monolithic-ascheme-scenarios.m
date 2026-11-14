@@ -318,9 +318,9 @@ printf "PART 5: MONOLITHIC A-SCHEME PROTOCOL & CRYPTANALYTIC ATTACK SCENARIOS\n"
 printf "==========================================================================\n";
 
 // Trusted Dealer Setup (Remark 6.1: Constructive Attribute Provisioning & Blind Noise Budgeting)
-// Error budget: aleph = 31, w_xi = 22, w_attr = aleph - w_xi = 9 (mutations wt(delta_u) <= 4)
-w_xi   := 22;
-w_attr := aleph - w_xi; // 9
+// Error budget: aleph = 31, w_xi = 23, w_attr = aleph - w_xi = 8 (mutations wt(delta_u) <= 4 => d_H <= 8)
+w_xi   := 23;
+w_attr := aleph - w_xi; // 8
 
 w_blocker := [Random(F) : i in [1..128]];
 m_pad     := [Random(F) : i in [1..256]];
@@ -416,9 +416,9 @@ printf "  [Without xi_i] Session Key khat_2 Leaked if Historical kappa_1 Comprom
        recovered_khat_2_by_srv eq khat_2;
 
 /* --------------------------------------------------------------------------
-   SCENARIO 2B: CROSS-SESSION ADDITION DEFEATED BY Expand_PRG NOISE (wt(xi) = 22)
+   SCENARIO 2B: CROSS-SESSION ADDITION DEFEATED BY Expand_PRG NOISE (wt(xi) = 23)
    -------------------------------------------------------------------------- */
-printf "\n=== SCENARIO 2B: SAME-SENDER CROSS-SESSION ADDITION DEFEATED BY xi_i (wt(xi) = 22) ===\n";
+printf "\n=== SCENARIO 2B: SAME-SENDER CROSS-SESSION ADDITION DEFEATED BY xi_i (wt(xi) = %o) ===\n", w_xi;
 xi_2, supp_xi_2 := ExpandPRG(khat_2, sigma_U1, w_xi, n_rs);
 c_prime_2 := c_2 + M_U1 + xi_2;
 
@@ -448,8 +448,8 @@ ok_srv_diff, _, _, _ := DecodeNS(server_sum_diff_senders);
 residual_diff := server_sum_diff_senders + (c_1 + c_3);
 wt_diff_total := #[i : i in [1..n_rs] | residual_diff[i] ne F!0];
 
-printf "  Attribute Distance wt(r_1 + r_2) = %o (<= 9), but Total Error wt(r_1 + r_2 + xi_1 + xi_3) = %o (> %o)\n",
-       wt_attr_12, wt_diff_total, aleph;
+printf "  Attribute Distance wt(r_1 + r_2) = %o (<= %o), but Total Error wt(r_1 + r_2 + xi_1 + xi_3) = %o (> %o)\n",
+       wt_attr_12, w_attr, wt_diff_total, aleph;
 printf "  Server RS Decode on (c'_U1 + c'_U2): %o -> ATTRIBUTE DIFFERENCE & KEY EXTRACTION BLOCKED!\n", ok_srv_diff;
 
 /* --------------------------------------------------------------------------
@@ -498,9 +498,10 @@ printf "  [Server + Leaked kappa_1] Residual Error on Session 2: wt(xi_loc_2 - x
        wt_loc_diff, aleph, ok_srv_loc_attack;
 
 /* --------------------------------------------------------------------------
-   SCENARIO 7: ANALYTICAL HYPERGEOMETRIC BOUND & 50,000-PAIR MONTE CARLO SUITE
+   SCENARIO 7: ANALYTICAL HYPERGEOMETRIC BOUND & 850,000-PAIR MONTE CARLO SUITE
    -------------------------------------------------------------------------- */
-printf "\n=== SCENARIO 7: ANALYTICAL & 50,000-PAIR MONTE CARLO SUPPORT OVERLAP BOUND ===\n";
+num_mc_trials := 850000;
+printf "\n=== SCENARIO 7: ANALYTICAL & %o-PAIR MONTE CARLO SUPPORT OVERLAP BOUND ===\n", num_mc_trials;
 RR := RealField(10);
 
 ComputeExactBounds := function(N_space, w_noise, t_rad)
@@ -531,14 +532,16 @@ end function;
 
 pr_s_20, pr_tot_20 := ComputeExactBounds(n_rs, 20, aleph);
 pr_s_22, pr_tot_22 := ComputeExactBounds(n_rs, 22, aleph);
+pr_s_23, pr_tot_23 := ComputeExactBounds(n_rs, 23, aleph);
 
 printf "  [Profile wt(xi)=20, w_attr<=11] Exact Pr[s >= 9]  = %o | Total Pr[wt <= 31] = %o (~ 2^-18.7)\n",
        pr_s_20, pr_tot_20;
 printf "  [Profile wt(xi)=22, w_attr<=9]  Exact Pr[s >= 13] = %o | Total Pr[wt <= 31] = %o (~ 2^-32.0)\n",
        pr_s_22, pr_tot_22;
+printf "  [Profile wt(xi)=23, w_attr<=8]  Exact Pr[s >= 15] = %o | Total Pr[wt <= 31] = %o (~ 2^-39.9)\n",
+       pr_s_23, pr_tot_23;
 
-// Fast 50,000-pair Monte Carlo simulation using native C-kernel RandomSubset
-num_mc_trials := 800000;
+// Fast 850,000-pair Monte Carlo simulation using native C-kernel RandomSubset
 BaseCoords := {1..n_rs};
 total_overlap := 0;
 min_combined_wt := 2 * w_xi;
@@ -569,7 +572,7 @@ emp_mean_ov  := (RR!total_overlap) / (RR!num_mc_trials);
 
 printf "  Theoretical E[s] = %.3o | Empirical Mean Overlap (%o pairs) = %.3o\n",
        theo_mean_ov, num_mc_trials, emp_mean_ov;
-printf "  Empirical Minimum wt(xi_a + xi_b) across %o pairs: %o (Threshold aleph = %o) | Collisions: %o\n",
+printf "  Empirical Minimum wt(xi_a + xi_b) across %o pairs: %o (Threshold aleph = %o, Johnson J = 34) | Collisions: %o\n",
        num_mc_trials, min_combined_wt, aleph, decodable_collisions;
 
 printf "\n=== ALL PROTOCOL STAGES & ATTACK SCENARIOS COMPLETED IN %.3o SEC ===\n", Cputime(t_start);
