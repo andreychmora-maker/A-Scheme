@@ -84,7 +84,7 @@ Provisioned Cohort Users U_1, U_2, U_3 | wt(r_1) = 64 (> 31) | d_H(r_1, r_2) = 8
 === SCENARIO 2A: CROSS-SESSION KEY-SUM EXPOSURE WITHOUT BLIND NOISE (xi = 0) ===
   [Without xi_i] Server RS Decode on (c'_1 + c'_2): true (wt = 0)
   [Without xi_i] Linear Payload Sum (kappa_1 + kappa_2) Exposed:    true
-  [Without xi_i] Session Key khat_2 Leaked if Historical kappa_1 Compromised: true
+  [Without xi_i] Session Key kappa_2 Leaked if Historical kappa_1 Compromised: true
 
 === SCENARIO 2B: SAME-SENDER CROSS-SESSION ADDITION DEFEATED BY xi_i (wt(xi) = 23) ===
   [With xi_i] Support Overlap |supp(xi_1) cap supp(xi_2)| = 1
