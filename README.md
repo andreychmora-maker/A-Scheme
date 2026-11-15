@@ -122,11 +122,11 @@ Provisioned Cohort Users U_1, U_2, U_3 | wt(r_1) = 64 (> 31) | d_H(r_1, r_2) = 8
 | **Sc. 1** | End-to-End Monolithic KEM + `Expand_PRG` Stripping & Schnorr Verify | `31` (`8 + 23`) | `<= 31` | `true` | ✅ Validated (<b>r</b>'<sub>1</sub> = <b>r</b><sub>1</sub>) |
 | **Sc. 2A** | Cross-Session Addition without Blind Noise (<b>ξ</b><sub><i>i</i></sub> = <b>0</b> Baseline) | `0` | `<= 31` | `true` | ⚠️ <i>κ</i><sub>1</sub> + <i>κ</i><sub>2</sub> Exposed |
 | **Sc. 2B** | Same-Sender Cross-Session Addition (<b>c</b>'<sub>1</sub> + <b>c</b>'<sub>2</sub>) with wt(<b>ξ</b><sub><i>i</i></sub>) = 23 | `45` (`overlap = 1`) | `> 34 > 31` | `false` | 🛡️ Addition Blocked |
-| **Sc. 3** | Distinct-Sender Cohort Addition (`c'_U1 + c'_U2`, `d_H(r_1, r_2) = 8`) | `52` | `> 34 > 31` | `false` | 🛡️ Attribute Diff Blocked |
+| **Sc. 3** | Distinct-Sender Cohort Addition (<b>c</b>'<sub>U<sub>1</sub></sub> + <b>c</b>'<sub>U<sub>2</sub></sub>, d<sub>H</sub>(<b>r</b><sub>1</sub>,<b>r</b><sub>2</sub>) = 8) | `52` | `> 34 > 31` | `false` | 🛡️ Attribute Diff Blocked |
 | **Sc. 4** | Homomorphic Odd Coalition (`T = 3`, 4 Operands in `G`) | `252 / 255` | `> 34 > 31` | `false` | 🛡️ Base-3 Carry Avalanche |
-| **Sc. 5** | Homomorphic Even Coalition (`T = 2`, `M_U2 + M_U3` Self-Annihilation) | `251 / 255` | `> 34 > 31` | `false` | 🛡️ Masks `(w, m)` Intact |
-| **Sc. 6** | Left-Half Localized CSPRNG Noise under Full <i>κ</i><sub>1</sub> Leak to Server | `31` (U2) / `43` (Srv) | `<= 31` / `> 34` | `true` / `false` | 🛡️ Session 2 Protected |
-| **Sc. 7** | Analytical Hypergeometric Bound & `850,000`-Pair Monte Carlo (`w_xi = 23`) | `min = 36` (`E[s] = 2.075`) | `> 34 > 31` | `0 collisions` | ✅ `Pr ≈ 1.50e-12 (~2^-39.3)` |
+| **Sc. 5** | Homomorphic Even Coalition (`T = 2`, <b>M</b><sub>U<sub>2</sub></sub> + <b>M</b><sub>U<sub>3</sub></sub> Self-Annihilation) | `251 / 255` | `> 34 > 31` | `false` | 🛡️ Masks (<b>w</b>, <b>m</b>) Intact |
+| **Sc. 6** | Left-Half Localized CSPRNG Noise under Full <i>κ</i><sub>1</sub> Leak to Server | `31` (U<sub>2</sub>) / `43` (Srv) | `<= 31` / `> 34` | `true` / `false` | 🛡️ Session 2 Protected |
+| **Sc. 7** | Analytical Hypergeometric Bound & `850,000`-Pair Monte Carlo (w<b><sub>ξ</b></sub> = 23) | `min = 36` (`E[s] = 2.075`) | `> 34 > 31` | `0 collisions` | ✅ `Pr ≈ 1.50e-12` (~2<sup>-39.3</sup>) |
 
 ### Analytical & Empirical Distribution of Combined Blind Noise (wt(<b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub>))
 
