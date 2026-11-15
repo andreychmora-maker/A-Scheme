@@ -148,7 +148,7 @@ The two-panel chart above illustrates the exact analytical and empirical securit
    - At <i>w</i><sub>ξ</sub> = 22 (orange curve), the probability at <i>w</i> = 34 is ≈ 1.25 × 10<sup>−6</sup> (≈ 1 in 800,000 pairs), explaining why ultra-large simulations of ~8 × 10<sup>5</sup> trials can touch the asymptotic Johnson boundary <i>J</i> = 34.
    - At **<i>w</i><sub>ξ</sub> = 23 (green curve)**, the entire distribution shifts right by `+2` symbols (concentrating around <i>w</i> ∈ {43, 44, 45} with E[<i>s</i>] = 2.075). Across **850,000 Monte Carlo pair trials** in Magma, the empirical minimum combined weight is **wt = 36 (dotted green vertical line)**—strictly above both the Guruswami–Sudan Johnson bound (<i>J</i> = 34) and the Berlekamp–Massey threshold (ℵ = 31) with **0 decodable collisions**.
 
-### Security of The A-Scheme under Differing Cohorts with ξ-Entropy (d_H(r_A, r_B) = 64)
+### Security of The A-Scheme under Differing Cohorts with ξ-Entropy (d<sub>H</sub>(<b>r</b><sub>A</sub>,<b>r</b><sub>B</sub>) = 64)
 
 ![A-Scheme Security under Differing Cohorts with ξ-Entropy](./covert_diff_cohort_overlap_chart.png)
 
