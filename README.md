@@ -152,9 +152,9 @@ The two-panel chart above illustrates the exact analytical and empirical securit
 
 ![A-Scheme Security under Differing Cohorts with ξ-Entropy](./covert_diff_cohort_overlap_chart.png)
 
-When an adversary tries to perform a Distinct-Sender Cohort Addition attack (<b>c</b>'<sub><i>A</i></sub> + <b>c</b>'<sub><i>B</i></sub>) where all masks and parameter heuristics align, but the senders belong to entirely differing cohorts, the system benefit from an insurmountable hamming barrier. Because the attribute profiles of users in different cohorts are highly diverse, their distance baseline is d<sub>H</sub>(<b>r</b><sub>A</sub>,<b>r</b><sub>B</sub>) = 64 symbols (each symbol is 1 byte in GF(256)). 
+When an adversary tries to perform a Distinct-Sender Cohort Addition attack (<b>c</b>'<sub><i>A</i></sub> + <b>c</b>'<sub><i>B</i></sub>) where all masks and parameter heuristics align, but the senders belong to entirely differing cohorts, the system benefit from an insurmountable hamming barrier. Because the attribute profiles of users in different cohorts are highly diverse, their distance baseline is d<sub>H</sub>(<b>r</b><sub><i>A</i></sub>,<b>r</b><sub><i>B</i></sub>) = 64 symbols (each symbol is 1 byte in GF(256)). 
 
-Even if masks and salts are fully aligned, adding these frames yields a total error of E<sub>total</sub> = d<sub>H</sub>(<b>r</b><sub>A</sub>,<b>r</b><sub>B</sub>) + <b>ξ</b><sub>a</sub> + <b>ξ</b><sub>b</sub>. The resulting validation of this security boundary across 100,000 Monte Carlo trials demonstrates:
+Even if masks and salts are fully aligned, adding these frames yields a total error of E<sub>total</sub> = d<sub>H</sub>(<b>r</b><sub><i>A</i></sub>,<b>r</b><sub><i>B</i></sub>) + <b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub>. The resulting validation of this security boundary across 100,000 Monte Carlo trials demonstrates:
 
 1. **Left Panel — Massive Error Weight Scale & Safety Margin:**
    - Instead of falling back near the unique decoding limit, the resulting weight strictly sits in the range of 78 to 100 symbols—well above any possible decoding capability.
