@@ -59,7 +59,7 @@ This is a purely client-side simulation. No data is transmitted, and no external
 
 ## Empirical Verification & Cryptanalytic Benchmark (`monolithic-ascheme-scenarios.m`)
 
-The complete protocol pipeline and cryptanalytic defense suite—including an **850,000-pair Monte Carlo simulation** at <i>w</i><sub>ξ</sub> = 23, <i>w</i><sub>attr</sub> = 8—execute directly in the **Magma Online Calculator** (`http://magma.maths.usyd.edu.au/calc/`) in **59.710 seconds** (within the 60-second sandbox limit). Across all 850,000 trials, the empirical mean support overlap converges to **2.075** (matching the theoretical expectation E[<i>s</i>] = 23<sup>2</sup> / 255 ≈ 2.075 to three decimal places), and the minimum observed combined noise weight is **36**, remaining strictly above both the unique Berlekamp–Massey decoding radius (ℵ = 31) and the full-code Guruswami–Sudan Johnson bound (<i>J</i>(255, 192) = 34).
+The complete protocol pipeline and cryptanalytic defense suite—including an **850,000-pair Monte Carlo simulation** at <i>w</i><sub>ξ</sub> = 23, <i>w</i><sub>attr</sub> = 8—execute directly in the **Magma Online Calculator** (`http://magma.maths.usyd.edu.au/calc/`) in **59.710 seconds** (within the 60-second web sandbox limit). Across all 850,000 trials, the empirical mean support overlap converges to **2.075** (matching the theoretical expectation E[<i>s</i>] = 23<sup>2</sup> / 255 ≈ 2.075 to three decimal places), and the minimum observed combined noise weight is **36**, remaining strictly above both the unique Berlekamp–Massey decoding radius (ℵ = 31) and the full-code Guruswami–Sudan Johnson bound (<i>J</i>(255, 192) = 34).
 
 ### Console Output (`Magma V2.29`)
 
@@ -179,7 +179,7 @@ A standalone statistical figure of **39.3 bits** (Pr ≈ 1.50 × 10<sup>−12</s
 
 When an adversary tries to perform a Distinct-Sender Cohort Addition attack (<b>c</b>'<sub><i>A</i></sub> + <b>c</b>'<sub><i>B</i></sub>) where all masks and parameter heuristics align, but the senders belong to entirely differing cohorts, the system benefits from an insurmountable hamming barrier. Because the attribute profiles of users in different cohorts are highly diverse, their distance baseline is <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>,<b><i>r</i></b><sub><i>B</i></sub>) = 64 symbols (each symbol is 1 byte in GF(256)). 
 
-Even if masks and salts are fully aligned, adding these frames yields a total error of E<sub>total</sub> = <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>,<b><i>r</i></b><sub><i>B</i></sub>) + <b><i>ξ</i></b><sub><i>a</i></sub> + <b><i>ξ</i></b><sub><i>b</i></sub>. The standalone script **`differing-cohorts.m`** executes the exact analytical hypergeometric-binomial convolution across <i>w</i><sub>ξ</sub> ∈ {18..25} and a **500,000-pair Monte Carlo verification** in Magma in **57.0 seconds**:
+Even if masks and salts are fully aligned, adding these frames yields a total error of E<sub>total</sub> = <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>,<b><i>r</i></b><sub><i>B</i></sub>) + <b><i>ξ</i></b><sub><i>a</i></sub> + <b><i>ξ</i></b><sub><i>b</i></sub>. The standalone script **`differing-cohorts.m`** executes the exact analytical hypergeometric-binomial convolution across <i>w</i><sub>ξ</sub> ∈ {18..25} and a **500,000-pair Monte Carlo verification** in Magma in **57.0 seconds** (within the 60-second web sandbox limit):
 
 ```text
 === DIFFERING COHORTS ANALYSIS (d_H(r_A, r_B) = 64, N = 255) ===
