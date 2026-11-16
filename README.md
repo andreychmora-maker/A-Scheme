@@ -117,16 +117,16 @@ Provisioned Cohort Users U_1, U_2, U_3 | wt(r_1) = 64 (> 31) | d_H(r_1, r_2) = 8
 
 ### Verification Summary Table
 
-| Scenario | Operational / Adversarial Test Case | Observed Weight `wt(e)` | Bound (`ℵ = 31`, `J = 34`) | RS Decode | Security Verdict |
+| Scenario | Operational / Adversarial Test Case | Observed Weight `wt(e)` | Bound (ℵ = 31, <i>J</i> = 34) | RS Decode | Security Verdict |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| **Sc. 1** | End-to-End Monolithic KEM + `Expand_PRG` Stripping & Schnorr Verify | `31` (`8 + 23`) | `<= 31` | `true` | ✅ Validated (<b>r</b>'<sub>1</sub> = <b>r</b><sub>1</sub>) |
+| **Sc. 1** | End-to-End Monolithic KEM + `Expand_PRG` Stripping & Schnorr Verify | `31` (`8 + 23`) | `<= 31` | `true` | ✅ Validated (<b><i>r</i></b>'<sub>1</sub> = <b><i>r</i></b><sub>1</sub>) |
 | **Sc. 2A** | Cross-Session Addition without Blind Noise (<b>ξ</b><sub><i>i</i></sub> = <b>0</b> Baseline) | `0` | `<= 31` | `true` | ⚠️ <i>κ</i><sub>1</sub> + <i>κ</i><sub>2</sub> Exposed |
 | **Sc. 2B** | Same-Sender Cross-Session Addition (<b>c</b>'<sub>1</sub> + <b>c</b>'<sub>2</sub>) with wt(<b>ξ</b><sub><i>i</i></sub>) = 23 | `45` (`overlap = 1`) | `> 34 > 31` | `false` | 🛡️ Addition Blocked |
-| **Sc. 3** | Distinct-Sender Cohort Addition (<b>c</b>'<sub>U<sub>1</sub></sub> + <b>c</b>'<sub>U<sub>2</sub></sub>, d<sub>H</sub>(<b>r</b><sub>1</sub>,<b>r</b><sub>2</sub>) = 8) | `52` | `> 34 > 31` | `false` | 🛡️ Attribute Diff Blocked |
-| **Sc. 4** | Homomorphic Odd Coalition (`T = 3`, 4 Operands in `G`) | `252 / 255` | `> 34 > 31` | `false` | 🛡️ Base-3 Carry Avalanche |
-| **Sc. 5** | Homomorphic Even Coalition (`T = 2`, <b>M</b><sub>U<sub>2</sub></sub> + <b>M</b><sub>U<sub>3</sub></sub> Self-Annihilation) | `251 / 255` | `> 34 > 31` | `false` | 🛡️ Masks (<b>w</b>, <b>m</b>) Intact |
+| **Sc. 3** | Distinct-Sender Cohort Addition (<b>c</b>'<sub>U<sub>1</sub></sub> + <b>c</b>'<sub>U<sub>2</sub></sub>, <i>d</i><sub>H</sub>(<b><i>r</i></b><sub>1</sub>,<b><i>r</i></b><sub>2</sub>) = 8) | `52` | `> 34 > 31` | `false` | 🛡️ Attribute Diff Blocked |
+| **Sc. 4** | Homomorphic Odd Coalition (T = 3, 4 Operands in `G`) | `252 / 255` | `> 34 > 31` | `false` | 🛡️ Base-3 Carry Avalanche |
+| **Sc. 5** | Homomorphic Even Coalition (T = 2, <b>M</b><sub>U<sub>2</sub></sub> + <b>M</b><sub>U<sub>3</sub></sub> Self-Annihilation) | `251 / 255` | `> 34 > 31` | `false` | 🛡️ Masks (<b>w</b>, <b>m</b>) Intact |
 | **Sc. 6** | Left-Half Localized CSPRNG Noise under Full <i>κ</i><sub>1</sub> Leak to Server | `31` (U<sub>2</sub>) / `43` (Srv) | `<= 31` / `> 34` | `true` / `false` | 🛡️ Session 2 Protected |
-| **Sc. 7** | Analytical Hypergeometric Bound & `850,000`-Pair Monte Carlo (w<b><sub>ξ</b></sub> = 23) | `min = 36` (`E[s] = 2.075`) | `> 34 > 31` | `0 collisions` | ✅ `Pr ≈ 1.50e-12` (~2<sup>-39.3</sup>) |
+| **Sc. 7** | Analytical Hypergeometric Bound & `850,000`-Pair Monte Carlo (w<b><sub>ξ</b></sub> = 23) | `min = 36` (`E[s] = 2.075`) | `> 34 > 31` | `0 collisions` | ✅ Pr ≈ 1.50e-12 (~2<sup>-39.3</sup>) |
 
 ### Analytical & Empirical Distribution of Combined Blind Noise (wt(<b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub>))
 
@@ -152,18 +152,18 @@ The two-panel chart above illustrates the exact analytical and empirical securit
 
 ![A-Scheme Security under Differing Cohorts with ξ-Entropy](./covert_diff_cohort_overlap_chart.png)
 
-When an adversary tries to perform a Distinct-Sender Cohort Addition attack (<b>c</b>'<sub><i>A</i></sub> + <b>c</b>'<sub><i>B</i></sub>) where all masks and parameter heuristics align, but the senders belong to entirely differing cohorts, the system benefit from an insurmountable hamming barrier. Because the attribute profiles of users in different cohorts are highly diverse, their distance baseline is d<sub>H</sub>(<b>r</b><sub><i>A</i></sub>,<b>r</b><sub><i>B</i></sub>) = 64 symbols (each symbol is 1 byte in GF(256)). 
+When an adversary tries to perform a Distinct-Sender Cohort Addition attack (<b>c</b>'<sub><i>A</i></sub> + <b>c</b>'<sub><i>B</i></sub>) where all masks and parameter heuristics align, but the senders belong to entirely differing cohorts, the system benefit from an insurmountable hamming barrier. Because the attribute profiles of users in different cohorts are highly diverse, their distance baseline is <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>,<b><i>r</i></b><sub><i>B</i></sub>) = 64 symbols (each symbol is 1 byte in GF(256)). 
 
-Even if masks and salts are fully aligned, adding these frames yields a total error of E<sub>total</sub> = d<sub>H</sub>(<b>r</b><sub><i>A</i></sub>,<b>r</b><sub><i>B</i></sub>) + <b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub>. The resulting validation of this security boundary across 100,000 Monte Carlo trials demonstrates:
+Even if masks and salts are fully aligned, adding these frames yields a total error of E<sub>total</sub> = <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>,<b><i>r</i></b><sub><i>B</i></sub>) + <b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub>. The resulting validation of this security boundary across 100,000 Monte Carlo trials demonstrates:
 
 1. **Left Panel — Massive Error Weight Scale & Safety Margin:**
    - Instead of falling back near the unique decoding limit, the resulting weight strictly sits in the range of 78 to 100 symbols—well above any possible decoding capability.
-   - For the optimal profile w<sub>ξ</sub> = 23, the expected combined error weight is **96.9 bytes**, with the absolute empirical minimum detected at **85 bytes**. This creates a massive safety buffer of **>40 bytes** beyond the list-decoding Johnson bound (J = 34) and the standard decoding threshold (ℵ = 31).
+   - For the optimal profile <i>w</i><sub>ξ</sub> = 23, the expected combined error weight is **96.9 bytes**, with the absolute empirical minimum detected at **85 bytes**. This creates a massive safety buffer of **>40 bytes** beyond the list-decoding Johnson bound (<i>J</i> = 34) and the standard decoding threshold (ℵ = 31).
 
 2. **Right Panel — Isolated Probability Density (PMF):**
-   - Plots the exact probability mass function for w<sub>ξ</sub> ∈ {20, 22, 23} at distance d<sub>H</sub> = 64.
+   - Plots the exact probability mass function for <i>w</i><sub>ξ</sub> ∈ {20, 22, 23} at distance <i>d</i><sub>H</sub> = 64.
    - The error weight distribution forms tight, highly predictable Gaussian-like curves centered between 90 and 100.
-   - Due to the high distance baseline, the probability of ever reducing the combined error back below the unique decoding radius ℵ = 31 or the Johnson Bound J = 34 is strictly **0.0** (mathematically zero). Unlinking, unmasking, or recovering any payload is information-theoretically impossible, ensuring that differing cohorts remain permanently isolated under any attempted linear addition.
+   - Due to the high distance baseline, the probability of ever reducing the combined error back below the unique decoding radius ℵ = 31 or the Johnson Bound <i>J</i> = 34 is strictly **0.0** (mathematically zero). Unlinking, unmasking, or recovering any payload is information-theoretically impossible, ensuring that differing cohorts remain permanently isolated under any attempted linear addition.
 
 ### 📚 Academic Citation
 
