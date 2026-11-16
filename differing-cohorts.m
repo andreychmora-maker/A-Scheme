@@ -69,7 +69,7 @@ for w_xi in [18..25] do
 end for;
 
 // 2. Fast Bitmask Monte Carlo for w_xi = 23 (100,000 trials)
-trials_diff := 100000;
+trials_diff := 500000;
 w_xi_opt := 23;
 min_wt_obs := 255;
 sum_wt_obs := 0;
