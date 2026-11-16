@@ -170,7 +170,7 @@ A standalone statistical figure of **39.3 bits** (Pr ≈ 1.50 × 10<sup>−12</s
 | **Distinct Senders (Differing Cohorts, <i>d</i><sub>H</sub> = 64)** | Cohort Barrier + Dual Blind Noise (`wt ≤ 34`) | **312.3 bits** (`Pr ≈ 9.99e-95`) |
 
 
-### Security of The A-Scheme under Differing Cohorts with ξ-Entropy (d<sub>H</sub>(<b>r</b><sub>A</sub>,<b>r</b><sub>B</sub>) = 64)
+### Security of The A-Scheme under Differing Cohorts with ξ-Entropy (<i>d</i><sub>H</sub>(<b><i>r</i></b><sub>A</sub>,<b><i>r</i></b><sub>B</sub>) = 64)
 
 ![A-Scheme Security under Differing Cohorts with ξ-Entropy](./covert_diff_cohort_overlap_chart.png)
 
