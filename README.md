@@ -154,16 +154,16 @@ The two-panel chart above illustrates the exact analytical and empirical securit
 
 When an adversary tries to perform a Distinct-Sender Cohort Addition attack (<b>c</b>'<sub><i>A</i></sub> + <b>c</b>'<sub><i>B</i></sub>) where all masks and parameter heuristics align, but the senders belong to entirely differing cohorts, the system benefit from an insurmountable hamming barrier. Because the attribute profiles of users in different cohorts are highly diverse, their distance baseline is <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>,<b><i>r</i></b><sub><i>B</i></sub>) = 64 symbols (each symbol is 1 byte in GF(256)). 
 
-Even if masks and salts are fully aligned, adding these frames yields a total error of E<sub>total</sub> = <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>,<b><i>r</i></b><sub><i>B</i></sub>) + <b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub>. The exact analytical hypergeometric-binomial convolution and 100,000-pair Monte Carlo verification in Magma demonstrate:
+Even if masks and salts are fully aligned, adding these frames yields a total error of E<sub>total</sub> = d<sub>H</sub>(<b>r</b><sub><i>A</i></sub>,<b>r</b><sub><i>B</i></sub>) + <b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub>. The exact analytical hypergeometric-binomial convolution and 500,000-pair Monte Carlo verification in Magma demonstrate:
 
 1. **Left Panel — Massive Error Weight Scale & Safety Margin:**
    - Instead of falling back near the unique decoding limit, the resulting weight strictly sits in the range of 78 to 100 symbols—well above any possible decoding capability.
-   - For the optimal profile <i>w</i><sub>ξ</sub> = 23, the exact analytical expected weight is **96.85 bytes** (empirical mean **96.87 bytes** across 100,000 trials), with the worst-case empirical minimum observed at **83 bytes**. This creates a massive safety buffer of **49 bytes** beyond the list-decoding Johnson bound (<i>J</i> = 34) and **52 bytes** beyond the unique decoding threshold (ℵ = 31).
+   - For the optimal profile <i>w</i><sub>ξ</sub> = 23, the exact analytical expected weight is **96.85 bytes** (empirical mean **96.84 bytes** across 500,000 trials), with the worst-case empirical minimum observed at **82 bytes**. This creates a massive safety buffer of **48 bytes** beyond the list-decoding Johnson bound (<i>J</i> = 34) and **51 bytes** beyond the unique decoding threshold (ℵ = 31).
 
 2. **Right Panel — Isolated Probability Density (PMF) & >312-Bit Security:**
    - Plots the probability mass function for <i>w</i><sub>ξ</sub> ∈ {20, 22, 23} at baseline cohort distance <i>d</i><sub>H</sub> = 64.
    - The error weight distribution forms tight Gaussian-like curves centered between 90 and 100.
-   - Reducing the combined weight from 64 down to <i>J</i> = 34 requires the sum <b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub> to land inside the 64-byte support of Δ<b><i>r</i></b><sub><i>AB</i></sub> and randomly match its exact byte values in GF(256)* across at least 30 coordinates simultaneously. At <i>w</i><sub>ξ</sub> = 23, the exact analytical probability of falling at or below the Johnson bound (wt ≤ 34) is **9.993 × 10<sup>−95</sup> ≈ 2<sup>−312.3</sup>** (over **312 bits** of security), making cross-cohort payload recovery information-theoretically impossible.
+   - Reducing the combined weight from 64 down to <i>J</i> = 34 requires the sum <b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub> to land inside the 64-byte support of Δ<b><i>r</i></b><sub><i>AB</i></sub> and randomly match its exact byte values in GF(256)* across at least 30 coordinates simultaneously. At <i>w</i><sub>ξ</sub> = 23, the exact analytical probability of falling at or below the Johnson bound (wt ≤ 34) is **9.993 × 10<sup>−95</sup> ≈ 2<sup>−312.3</sup>** (over **312 bits** of security), with **0 collisions** across all 500,000 trials.
 
 ## 📚 Academic Citation
 
