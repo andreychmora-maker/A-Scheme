@@ -15,6 +15,7 @@ This repository contains the proof-of-concept (PoC) implementation, benchmarking
 - **`benchmark.m`**: A script for comprehensive end-to-end benchmarking of the baseline A-Scheme. It integrates a standard Reed-Solomon [255, 128, 128]₂₅₆ algebraic engine over GF(256) (code rate *R* ≈ 0.50), Curve25519 cryptographic primitives, and homomorphic XOR emulation featuring O(1) table-based ECDLP resolution.
 - **`rs256_192_65.m`**: An upgraded end-to-end Magma benchmark script implementing the high-rate extended non-systematic Reed-Solomon [256, 192, 65]₂₅₆ algebraic engine over GF(256) (code rate *R* = 0.75). It incorporates a random invertible scrambling matrix *S* ∈ GL(192, GF(256)) for MDS puncturing defense, 256-byte Curve25519 homomorphic XOR evaluation, punctured syndrome decoding (clearing ℵ = 31 symbol errors), and linear payload recovery via submatrix inversion.
 - **`monolithic-ascheme-scenarios.m`**: An end-to-end protocol and cryptanalytic attack verification suite over Curve25519. It validates the monolithic KEM payload encapsulation (session keys, integrity hashes, broadcast rosters, salts and compact Schnorr signatures) along with self-unmasking ephemeral half-radius blind noise (wt(<b>ξ</b><sub><i>i</i></sub>) = 23, <i>w</i><sub>attr</sub> ≤ 8) generated via deterministic `Expand_PRG` expansion. It simulates 7 distinct operational and adversarial scenarios—including an 850,000-pair Monte Carlo simulation—demonstrating complete resilience against cross-session linear addition attacks, tag annihilation failures, and full session compromise.
+- **`differing-cohorts.m`**: A standalone analytical and Monte Carlo verification script evaluating inter-cohort isolation under Distinct-Sender Cohort Addition attacks (<b>c</b>'<sub><i>A</i></sub> + <b>c</b>'<sub><i>B</i></sub>) at baseline Hamming distance <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>, <b><i>r</i></b><sub><i>B</i></sub>) = 64. It computes the exact hypergeometric–binomial convolution across noise profiles <i>w</i><sub>ξ</sub> ∈ {18..25} and executes a 500,000-pair bitmask Monte Carlo simulation in 57.0 seconds, proving that cross-cohort collision probabilities (wt ≤ 34) are bounded below 9.993 × 10<sup>−95</sup> (≈ 2<sup>−312.3</sup>) at <i>w</i><sub>ξ</sub> = 23.
 - **`optimized_Gaudry-Schost.m`**: A memory-optimized Magma implementation of the Gaudry-Schost algorithm for resolving the short-interval ECDLP on Montgomery Curve25519 without relying on precomputed lookup tables. The algorithm leverages equivalence classes (coordinates with opposite signs) and an asymmetric compression ratio of 0.1 to accelerate the collision search.
 
 ## Security Highlights: Ephemeral Blind Noise & Cross-Session Defense
@@ -23,6 +24,7 @@ To prevent advanced inter-frame and cross-session linear addition attacks (<b>c<
 
 - **Intra-Epoch and Inter-Session Protection:** While static Access Codes allow mask annihilation under pairwise combinations (<i>T</i> = 2), injecting per-session ephemeral blind noise ensures that any attempted linear addition combines independent support weights (wt(<b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub>) = 2<i>w</i><sub>ξ</sub> − <i>s</i> − <i>c</i>), yielding a total error weight strictly exceeding both the unique Reed–Solomon decoding threshold (ℵ = 31) and the full-code Guruswami–Sudan Johnson bound (<i>J</i>(255, 192) = 34), with unique-decoding collision probabilities bounded below 1.50 × 10<sup>−12</sup> ≈ 2<sup>−39.3</sup> (and 2.30 × 10<sup>−10</sup> ≈ 2<sup>−32.0</sup> at <i>w</i><sub>ξ</sub> = 22).
 - **Cross-Session Key Isolation:** By binding the ephemeral noise generation to the session key and cryptographic salt (<b>ξ</b><sub><i>i</i></sub> = Expand<sub>PRG</sub>(<b>κ̂</b><sub><i>i</i></sub> || <i>σ</i><sub><i>i</i></sub>)) or localizing <b>ξ</b><sub><i>i</i></sub> via CSPRNG in the left-hand blocker coordinates, the server is prevented from decoding the linear payload sum <i>κ</i><sub>1</sub> ⊕ <i>κ</i><sub>2</sub>, preserving full inter-session key isolation even if a historical session key is compromised.
+- **Inter-Cohort Isolation (`differing-cohorts.m`):** For senders belonging to distinct cohorts (baseline attribute distance <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>, <b><i>r</i></b><sub><i>B</i></sub>) = 64), the combined error weight E<sub>total</sub> = <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>,<b><i>r</i></b><sub><i>B</i></sub>) + <b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub> concentrates around an exact analytical expectation of 96.85 symbols (empirical minimum of 82 across 500,000 trials), bounding the list-decoding probability (wt ≤ 34) to 9.993 × 10<sup>−95</sup> ≈ 2<sup>−312.3</sup> (> 312 bits of security).
 
 ## An Interactive Web Simulator
 
@@ -57,7 +59,7 @@ This is a purely client-side simulation. No data is transmitted, and no external
 
 ## Empirical Verification & Cryptanalytic Benchmark (`monolithic-ascheme-scenarios.m`)
 
-The complete protocol pipeline and cryptanalytic defense suite—including an **850,000-pair Monte Carlo simulation** at $w_\xi = 23, w_{\mathrm{attr}} = 8$—execute directly in the **Magma Online Calculator** (`http://magma.maths.usyd.edu.au/calc/`) in **59.710 seconds** (within the 60-second sandbox limit). Across all $850{,}000$ trials, the empirical mean support overlap converges to **2.075** (matching the theoretical expectation $\mathbb{E}[s] = 23^2/255 \approx 2.075$ to three decimal places), and the minimum observed combined noise weight is **36**, remaining strictly above both the unique Berlekamp–Massey decoding radius ($\aleph = 31$) and the full-code Guruswami–Sudan Johnson bound ($J(255, 192) = 34$).
+The complete protocol pipeline and cryptanalytic defense suite—including an **850,000-pair Monte Carlo simulation** at <i>w</i><sub>ξ</sub> = 23, <i>w</i><sub>attr</sub> = 8—execute directly in the **Magma Online Calculator** (`http://magma.maths.usyd.edu.au/calc/`) in **59.710 seconds** (within the 60-second sandbox limit). Across all 850,000 trials, the empirical mean support overlap converges to **2.075** (matching the theoretical expectation E[<i>s</i>] = 23<sup>2</sup> / 255 ≈ 2.075 to three decimal places), and the minimum observed combined noise weight is **36**, remaining strictly above both the unique Berlekamp–Massey decoding radius (ℵ = 31) and the full-code Guruswami–Sudan Johnson bound (<i>J</i>(255, 192) = 34).
 
 ### Console Output (`Magma V2.29`)
 
@@ -84,7 +86,7 @@ Provisioned Cohort Users U_1, U_2, U_3 | wt(r_1) = 64 (> 31) | d_H(r_1, r_2) = 8
 === SCENARIO 2A: CROSS-SESSION KEY-SUM EXPOSURE WITHOUT BLIND NOISE (xi = 0) ===
   [Without xi_i] Server RS Decode on (c'_1 + c'_2): true (wt = 0)
   [Without xi_i] Linear Payload Sum (kappa_1 + kappa_2) Exposed:    true
-  [Without xi_i] Session Key khat_2 Leaked if Historical kappa_1 Compromised: true
+  [Without xi_i] Session Key kappa_2 Leaked if Historical kappa_1 Compromised: true
 
 === SCENARIO 2B: SAME-SENDER CROSS-SESSION ADDITION DEFEATED BY xi_i (wt(xi) = 23) ===
   [With xi_i] Support Overlap |supp(xi_1) cap supp(xi_2)| = 1
@@ -127,6 +129,7 @@ Provisioned Cohort Users U_1, U_2, U_3 | wt(r_1) = 64 (> 31) | d_H(r_1, r_2) = 8
 | **Sc. 5** | Homomorphic Even Coalition (T = 2, <b>M</b><sub>U<sub>2</sub></sub> + <b>M</b><sub>U<sub>3</sub></sub> Self-Annihilation) | `251 / 255` | `> 34 > 31` | `false` | 🛡️ Masks (<b>w</b>, <b>m</b>) Intact |
 | **Sc. 6** | Left-Half Localized CSPRNG Noise under Full <i>κ</i><sub>1</sub> Leak to Server | `31` (U<sub>2</sub>) / `43` (Srv) | `<= 31` / `> 34` | `true` / `false` | 🛡️ Session 2 Protected |
 | **Sc. 7** | Analytical Hypergeometric Bound & `850,000`-Pair Monte Carlo (w<b><sub>ξ</b></sub> = 23) | `min = 36` (`E[s] = 2.075`) | `> 34 > 31` | `0 collisions` | ✅ Pr ≈ 1.50e-12 (~2<sup>-39.3</sup>) |
+| **Diff. Cohorts** | Inter-Cohort Addition (`differing-cohorts.m`, <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>,<b><i>r</i></b><sub><i>B</i></sub>) = 64, `500,000` pairs) | `min = 82` (`E[wt] = 96.85`) | `> 34 > 31` | `0 collisions` | ✅ Pr ≈ 9.99e-95 (~2<sup>-312.3</sup>) |
 
 ### Analytical & Empirical Distribution of Combined Blind Noise (wt(<b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub>))
 
@@ -134,7 +137,7 @@ Provisioned Cohort Users U_1, U_2, U_3 | wt(r_1) = 64 (> 31) | d_H(r_1, r_2) = 8
 
 When an adversary or honest-but-curious Server sums two perturbed frames <b>c</b>'<sub><i>a</i></sub> + <b>c</b>'<sub><i>b</i></sub> from the same sender, the static masks (<b>w</b>, <b>m</b>) cancel in characteristic 2, leaving the sum of two independent ephemeral blind noise vectors <b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub> of individual weight <i>w</i><sub>ξ</sub> over the <i>N</i> = 255 cyclic Reed–Solomon core coordinates. If their supports overlap in <i>s</i> = |supp(<b>ξ</b><sub><i>a</i></sub>) ∩ supp(<b>ξ</b><sub><i>b</i></sub>)| coordinates (following a hypergeometric distribution with expectation E[<i>s</i>] = <i>w</i><sub>ξ</sub><sup>2</sup> / 255) and <i>c</i> ~ Binomial(<i>s</i>, 1/255) overlapping coordinates randomly cancel to zero in GF(256)* = GF(256) \ {0}, the resulting combined error weight is:
 
-$$\mathrm{wt}(\xi_a + \xi_b) = 2w_\xi - s - c.$$
+<p align="center">wt(<b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub>) = 2<i>w</i><sub>ξ</sub> − <i>s</i> − <i>c</i>.</p>
 
 The two-panel chart above illustrates the exact analytical and empirical security margins across parameter profiles (<i>w</i><sub>ξ</sub>, <i>w</i><sub>attr</sub>) satisfying <i>w</i><sub>ξ</sub> + <i>w</i><sub>attr</sub> = ℵ = 31:
 
@@ -170,16 +173,31 @@ A standalone statistical figure of **39.3 bits** (Pr ≈ 1.50 × 10<sup>−12</s
 | **Distinct Senders (Differing Cohorts, <i>d</i><sub>H</sub> = 64)** | Cohort Barrier + Dual Blind Noise (`wt ≤ 34`) | **312.3 bits** (`Pr ≈ 9.99e-95`) |
 
 
-### Security of The A-Scheme under Differing Cohorts with ξ-Entropy (<i>d</i><sub>H</sub>(<b><i>r</i></b><sub>A</sub>,<b><i>r</i></b><sub>B</sub>) = 64)
+### Security of The A-Scheme under Differing Cohorts with ξ-Entropy (`differing-cohorts.m`, <i>d</i><sub>H</sub>(<b><i>r</i></b><sub>A</sub>,<b><i>r</i></b><sub>B</sub>) = 64)
 
 ![A-Scheme Security under Differing Cohorts with ξ-Entropy](./covert_diff_cohort_overlap_chart.png)
 
-When an adversary tries to perform a Distinct-Sender Cohort Addition attack (<b>c</b>'<sub><i>A</i></sub> + <b>c</b>'<sub><i>B</i></sub>) where all masks and parameter heuristics align, but the senders belong to entirely differing cohorts, the system benefit from an insurmountable hamming barrier. Because the attribute profiles of users in different cohorts are highly diverse, their distance baseline is <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>,<b><i>r</i></b><sub><i>B</i></sub>) = 64 symbols (each symbol is 1 byte in GF(256)). 
+When an adversary tries to perform a Distinct-Sender Cohort Addition attack (<b>c</b>'<sub><i>A</i></sub> + <b>c</b>'<sub><i>B</i></sub>) where all masks and parameter heuristics align, but the senders belong to entirely differing cohorts, the system benefits from an insurmountable hamming barrier. Because the attribute profiles of users in different cohorts are highly diverse, their distance baseline is <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>,<b><i>r</i></b><sub><i>B</i></sub>) = 64 symbols (each symbol is 1 byte in GF(256)). 
 
-Even if masks and salts are fully aligned, adding these frames yields a total error of E<sub>total</sub> = d<sub>H</sub>(<b>r</b><sub><i>A</i></sub>,<b>r</b><sub><i>B</i></sub>) + <b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub>. The exact analytical hypergeometric-binomial convolution and 500,000-pair Monte Carlo verification in Magma demonstrate:
+Even if masks and salts are fully aligned, adding these frames yields a total error of E<sub>total</sub> = <i>d</i><sub>H</sub>(<b><i>r</i></b><sub><i>A</i></sub>,<b><i>r</i></b><sub><i>B</i></sub>) + <b>ξ</b><sub><i>a</i></sub> + <b>ξ</b><sub><i>b</i></sub>. The standalone script **`differing-cohorts.m`** executes the exact analytical hypergeometric-binomial convolution across <i>w</i><sub>ξ</sub> ∈ {18..25} and a **500,000-pair Monte Carlo verification** in Magma in **57.0 seconds**:
+
+```text
+=== DIFFERING COHORTS ANALYSIS (d_H(r_A, r_B) = 64, N = 255) ===
+  [Profile wt(xi)=18, w_attr<=13] Exact E[wt(E_total)] = 89.98 | Exact Pr[wt <= 34] = 1.882E-92
+  [Profile wt(xi)=19, w_attr<=12] Exact E[wt(E_total)] = 91.36 | Exact Pr[wt <= 34] = 1.279E-92
+  [Profile wt(xi)=20, w_attr<=11] Exact E[wt(E_total)] = 92.74 | Exact Pr[wt <= 34] = 5.807E-93
+  [Profile wt(xi)=21, w_attr<=10] Exact E[wt(E_total)] = 94.12 | Exact Pr[wt <= 34] = 1.920E-93
+  [Profile wt(xi)=22, w_attr<= 9] Exact E[wt(E_total)] = 95.48 | Exact Pr[wt <= 34] = 4.892E-94
+  [Profile wt(xi)=23, w_attr<= 8] Exact E[wt(E_total)] = 96.85 | Exact Pr[wt <= 34] = 9.993E-95
+  [Profile wt(xi)=24, w_attr<= 7] Exact E[wt(E_total)] = 98.21 | Exact Pr[wt <= 34] = 1.686E-95
+  [Profile wt(xi)=25, w_attr<= 6] Exact E[wt(E_total)] = 99.56 | Exact Pr[wt <= 34] = 2.400E-96
+  [Monte Carlo 500000 pairs, w_xi=23] Empirical Mean = 96.84 | Empirical Min = 82 (> J = 34) | Collisions: 0
+```
+
+The analytical and empirical evaluation demonstrates:
 
 1. **Left Panel — Massive Error Weight Scale & Safety Margin:**
-   - Instead of falling back near the unique decoding limit, the resulting weight strictly sits in the range of 78 to 100 symbols—well above any possible decoding capability.
+   - Instead of falling back near the unique decoding limit, the resulting weight strictly sits in the range of 76 to 100 symbols—well above any possible decoding capability.
    - For the optimal profile <i>w</i><sub>ξ</sub> = 23, the exact analytical expected weight is **96.85 bytes** (empirical mean **96.84 bytes** across 500,000 trials), with the worst-case empirical minimum observed at **82 bytes**. This creates a massive safety buffer of **48 bytes** beyond the list-decoding Johnson bound (<i>J</i> = 34) and **51 bytes** beyond the unique decoding threshold (ℵ = 31).
 
 2. **Right Panel — Isolated Probability Density (PMF) & >312-Bit Security:**
